@@ -1,7 +1,7 @@
 <!-- Sync Impact Report
-Version change: none -> 1.0.0 (initial ratification)
-Modified principles: none (initial)
-Added sections: Core Principles I-VII, Technology Stack Constraints, Development Workflow
+Version change: 1.0.0 -> 1.1.0 (commit gate: tests en verde obligatorios)
+Modified principles: none
+Added sections: Commit gate en Development Workflow y Governance
 Removed sections: none
 TODOs: none
 -->
@@ -39,10 +39,10 @@ YAGNI: empezar monolito modular, sin microservicios. Ningún código sin spec ap
 
 ## Development Workflow
 
-Flujo obligatorio: `/speckit-specify` → `/speckit-plan` → `/speckit-tasks` → `/speckit-implement` → `/speckit-converge`. Revisión humana entre fases. Commits en español con formato `docs|feat|fix: ...`. `constitution.md` manda sobre cualquier guía en `AGENTS.md`.
+Flujo obligatorio: `/speckit-specify` → `/speckit-plan` → `/speckit-tasks` → `/speckit-implement` → `/speckit-converge`. Revisión humana entre fases. Commits en español con formato `docs|feat|fix: ...`. **Commit gate (NON-NEGOTIABLE): prohibido commitear o pushear con tests en rojo; todo commit exige `mvn -B test` con 100% en verde justo antes.** `constitution.md` manda sobre cualquier guía en `AGENTS.md`.
 
 ## Governance
 
-Esta constitution prevalece sobre toda práctica. Enmiendas con Sync Impact Report, versionado semántico (MAJOR ruptura, MINOR principio nuevo, PATCH clarificación) y revisión en PR. Cada PR verifica: local-first, tests en verde, RAG cita fuente, TTS desacoplado.
+Esta constitution prevalece sobre toda práctica. Enmiendas con Sync Impact Report, versionado semántico (MAJOR ruptura, MINOR principio nuevo, PATCH clarificación) y revisión en PR. Cada PR verifica: local-first, tests en verde, RAG cita fuente, TTS desacoplado. Ningún commit ni push con `mvn -B test` en rojo, sin excepciones.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-06 | **Last Amended**: 2026-10-06
+**Version**: 1.1.0 | **Ratified**: 2026-10-06 | **Last Amended**: 2026-10-07
