@@ -45,20 +45,26 @@ public class NarracionService {
         .toList();
   }
 
+  public record EntregaAudio(byte[] datos, String formato) {}
+
   @Transactional
-  public byte[] audioDe(Long fragmentoId) {
+  public EntregaAudio audioDe(Long fragmentoId) {
     Fragmento f = fragmentos.findById(fragmentoId)
         .orElseThrow(() -> new TemarioException("Fragmento no existe: " + fragmentoId, 404));
-    asegurarAudio(f);
-    return store.leer(f.getTemaId(), f.getId());
+    AudioFragmento row = asegurarAudio(f);
+    return new EntregaAudio(store.leer(f.getTemaId(), f.getId(), row.getFormato()), row.getFormato());
   }
 
   @Transactional
-  public void asegurarAudio(Fragmento f) {
-    if (audios.existsById(f.getId()) && store.existe(f.getTemaId(), f.getId())) return;
+  public AudioFragmento asegurarAudio(Fragmento f) {
+    var existente = audios.findById(f.getId());
+    if (existente.isPresent() && store.existe(f.getTemaId(), f.getId(), existente.get().getFormato())) {
+      return existente.get();
+    }
     TtsService.Audio audio = tts.sintetizar(f.getTexto());
-    store.guardar(f.getTemaId(), f.getId(), audio.wav());
-    audios.save(new AudioFragmento(f.getId(), audio.duracionSeg()));
+    store.guardar(f.getTemaId(), f.getId(), audio.extension(), audio.datos());
+    existente.ifPresent(audios::delete);
+    return audios.save(new AudioFragmento(f.getId(), audio.duracionSeg(), audio.extension()));
   }
 
   @Transactional

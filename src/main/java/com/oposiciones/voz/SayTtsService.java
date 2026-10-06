@@ -26,18 +26,18 @@ public class SayTtsService implements TtsService {
       throw new com.oposiciones.temario.TemarioException("Texto vacío, nada que sintetizar", 422);
     }
     try {
-      Path tmp = Files.createTempFile("voz-", ".wav");
+      Path tmp = Files.createTempFile("voz-", ".m4a");
       try {
-        Process p = new ProcessBuilder("say", "-v", voice, "-o", tmp.toString(),
-            "--file-format=WAVE", "--data-format=LEI16@22050", texto)
+        // M4A/AAC nativo (~10x menos que WAV); la extensión manda el formato
+        Process p = new ProcessBuilder("say", "-v", voice, "-o", tmp.toString(), texto)
             .redirectErrorStream(true).start();
         String log = new String(p.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         int code = p.waitFor();
         if (code != 0) {
           throw new com.oposiciones.temario.TemarioException("Motor de voz falló: " + log, 500);
         }
-        byte[] wav = Files.readAllBytes(tmp);
-        return new Audio(wav, WavUtil.duracionSeg(wav));
+        byte[] audio = Files.readAllBytes(tmp);
+        return new Audio(audio, M4aUtil.duracionSeg(tmp), "m4a");
       } finally {
         Files.deleteIfExists(tmp);
       }
@@ -45,6 +45,20 @@ public class SayTtsService implements TtsService {
       throw e;
     } catch (Exception e) {
       throw new com.oposiciones.temario.TemarioException("No se pudo sintetizar voz: " + e.getMessage(), 500, e);
+    }
+  }
+
+  /** Duración en segundos vía `afinfo` (macOS). */
+  static final class M4aUtil {
+    static double duracionSeg(Path m4a) throws Exception {
+      Process p = new ProcessBuilder("afinfo", m4a.toString())
+          .redirectErrorStream(true).start();
+      String out = new String(p.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+      p.waitFor();
+      var m = java.util.regex.Pattern.compile("estimated duration: ([0-9.]+) sec")
+          .matcher(out);
+      if (m.find()) return Double.parseDouble(m.group(1));
+      throw new IllegalArgumentException("afinfo sin duración: " + out.lines().findFirst().orElse("?"));
     }
   }
 

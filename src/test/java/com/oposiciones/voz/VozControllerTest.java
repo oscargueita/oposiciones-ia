@@ -40,7 +40,7 @@ class VozControllerTest {
     when(embeddingService.encode(org.mockito.ArgumentMatchers.any(float[].class)))
         .thenCallRealMethod();
     when(tts.sintetizar(anyString()))
-        .thenReturn(new TtsService.Audio(TestAudio.wav(10.0), 10.0));
+        .thenReturn(new TtsService.Audio(TestAudio.wav(10.0), 10.0, "m4a"));
     TestAudio.limpiar(Path.of("target/test-audio"));
     MockMultipartFile file = new MockMultipartFile("files", "tema01.pdf",
         "application/pdf", TemarioServiceTest.temaValido());
@@ -62,7 +62,7 @@ class VozControllerTest {
   void audioDevuelveWav() throws Exception {
     mvc.perform(get("/api/v1/fragmentos/" + fragmentoId + "/audio"))
         .andExpect(status().isOk())
-        .andExpect(header().string("Content-Type", "audio/wav"));
+        .andExpect(header().string("Content-Type", "audio/mp4"));
   }
 
   @Test

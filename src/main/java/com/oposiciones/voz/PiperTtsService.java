@@ -43,7 +43,7 @@ public class PiperTtsService implements TtsService {
           throw new com.oposiciones.temario.TemarioException("Piper falló: " + log, 500);
         }
         byte[] wav = Files.readAllBytes(tmp);
-        return new Audio(wav, SayTtsService.WavUtil.duracionSeg(wav));
+        return new Audio(wav, SayTtsService.WavUtil.duracionSeg(wav), "wav");
       } finally {
         Files.deleteIfExists(tmp);
       }

@@ -24,10 +24,11 @@ public class VozController {
     return narracion.playlist(id);
   }
 
-  @GetMapping(value = "/fragmentos/{fid}/audio", produces = "audio/wav")
+  @GetMapping(value = "/fragmentos/{fid}/audio")
   public ResponseEntity<byte[]> audio(@PathVariable Long fid) {
-    byte[] wav = narracion.audioDe(fid);
-    return ResponseEntity.ok().contentType(MediaType.parseMediaType("audio/wav")).body(wav);
+    var entrega = narracion.audioDe(fid);
+    String contentType = "m4a".equals(entrega.formato()) ? "audio/mp4" : "audio/wav";
+    return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType)).body(entrega.datos());
   }
 
   @GetMapping("/temas/{id}/progreso")

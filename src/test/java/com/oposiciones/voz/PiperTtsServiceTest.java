@@ -25,7 +25,7 @@ class PiperTtsServiceTest {
     assumeTrue(piperOk && Files.isRegularFile(model), "Piper o modelo es_ES no instalados");
     var svc = new PiperTtsService("piper", model.toString());
     var audio = svc.sintetizar("Hola, buenos días.");
-    assertThat(audio.wav()).isNotEmpty();
+    assertThat(audio.datos()).isNotEmpty();
     assertThat(audio.duracionSeg()).isPositive();
   }
 }

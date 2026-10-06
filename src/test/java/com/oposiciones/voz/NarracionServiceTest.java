@@ -35,7 +35,7 @@ class NarracionServiceTest {
     when(embeddingService.encode(org.mockito.ArgumentMatchers.any(float[].class)))
         .thenCallRealMethod();
     when(tts.sintetizar(anyString()))
-        .thenReturn(new TtsService.Audio(TestAudio.wav(2.0), 2.0));
+        .thenReturn(new TtsService.Audio(TestAudio.wav(2.0), 2.0, "m4a"));
     TestAudio.limpiar(Path.of("target/test-audio"));
   }
 
@@ -59,7 +59,7 @@ class NarracionServiceTest {
   void audioDevuelveWavDelFragmento() {
     Tema t = temario.ingestar("tema01.pdf", TemarioServiceTest.temaValido());
     Long fid = narracion.playlist(t.getId()).get(0).fragmentoId();
-    byte[] wav = narracion.audioDe(fid);
+    byte[] wav = narracion.audioDe(fid).datos();
     assertThat(new String(wav, 0, 4)).isEqualTo("RIFF");
   }
 

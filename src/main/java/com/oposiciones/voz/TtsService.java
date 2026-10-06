@@ -6,8 +6,8 @@ package com.oposiciones.voz;
  */
 public interface TtsService {
 
-  /** Audio WAV 22050Hz mono 16-bit del texto dado. */
+  /** Audio sintetizado. `extension` es "m4a" (say/AAC) o "wav" (piper). */
   Audio sintetizar(String texto);
 
-  record Audio(byte[] wav, double duracionSeg) {}
+  record Audio(byte[] datos, double duracionSeg, String extension) {}
 }

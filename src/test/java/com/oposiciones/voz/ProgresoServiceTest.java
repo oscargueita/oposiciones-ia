@@ -33,7 +33,7 @@ class ProgresoServiceTest {
     when(embeddingService.encode(org.mockito.ArgumentMatchers.any(float[].class)))
         .thenCallRealMethod();
     when(tts.sintetizar(anyString()))
-        .thenReturn(new TtsService.Audio(TestAudio.wav(10.0), 10.0));
+        .thenReturn(new TtsService.Audio(TestAudio.wav(10.0), 10.0, "m4a"));
     TestAudio.limpiar(Path.of("target/test-audio"));
   }
 

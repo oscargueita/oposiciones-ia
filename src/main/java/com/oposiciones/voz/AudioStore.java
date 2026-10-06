@@ -17,30 +17,30 @@ public class AudioStore {
     this.baseDir = Path.of(baseDir);
   }
 
-  public Path ruta(Long temaId, Long fragmentoId) {
-    return baseDir.resolve(String.valueOf(temaId)).resolve(fragmentoId + ".wav");
+  public Path ruta(Long temaId, Long fragmentoId, String formato) {
+    return baseDir.resolve(String.valueOf(temaId)).resolve(fragmentoId + "." + formato);
   }
 
-  public void guardar(Long temaId, Long fragmentoId, byte[] wav) {
+  public void guardar(Long temaId, Long fragmentoId, String formato, byte[] datos) {
     try {
-      Path p = ruta(temaId, fragmentoId);
+      Path p = ruta(temaId, fragmentoId, formato);
       Files.createDirectories(p.getParent());
-      Files.write(p, wav);
+      Files.write(p, datos);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
   }
 
-  public byte[] leer(Long temaId, Long fragmentoId) {
+  public byte[] leer(Long temaId, Long fragmentoId, String formato) {
     try {
-      return Files.readAllBytes(ruta(temaId, fragmentoId));
+      return Files.readAllBytes(ruta(temaId, fragmentoId, formato));
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
   }
 
-  public boolean existe(Long temaId, Long fragmentoId) {
-    return Files.isRegularFile(ruta(temaId, fragmentoId));
+  public boolean existe(Long temaId, Long fragmentoId, String formato) {
+    return Files.isRegularFile(ruta(temaId, fragmentoId, formato));
   }
 
   public void borrarTema(Long temaId) {
