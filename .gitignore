@@ -38,5 +38,6 @@ target/
 oposiciones.db*
 data/temario/*.pdf
 data/audio/
+data/voces/
 *.mp3
 *.wav
