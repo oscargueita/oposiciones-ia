@@ -1,0 +1,42 @@
+openapi: 3.0.3
+info:
+  title: Oposiciones IA - Tests API (004)
+  version: 0.4.0
+paths:
+  /api/v1/temas/{id}/tests:
+    post:
+      summary: Generar test (siempre preguntas nuevas)
+      parameters:
+        - name: n
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: dificultad
+          in: query
+          schema:
+            type: string
+            enum: [FACIL, MEDIO, DIFICIL]
+            default: MEDIO
+      responses:
+        '201':
+          description: Test con preguntas (sin correctas expuestas? incluye todo en v1)
+        '422':
+          description: Tema sin contenido o N inválida
+    get:
+      summary: Historial de tests del tema con notas
+      responses:
+        '200':
+          description: Tests ordenados por fecha con nota si corregido
+  /api/v1/tests/{testId}/responder:
+    post:
+      summary: Responder una pregunta (feedback inmediato)
+      responses:
+        '200':
+          description: Acierto + explicación + cita
+  /api/v1/tests/{testId}/finalizar:
+    post:
+      summary: Finalizar y calcular nota + repaso completo
+      responses:
+        '200':
+          description: Nota, aciertos, fallos y detalle por pregunta
