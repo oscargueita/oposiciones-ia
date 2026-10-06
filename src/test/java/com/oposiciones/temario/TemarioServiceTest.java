@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @Transactional
-class TemarioServiceTest {
+public class TemarioServiceTest {
 
   @Autowired TemarioService service;
   @Autowired TemaRepository temas;
@@ -26,7 +26,7 @@ class TemarioServiceTest {
         .thenCallRealMethod();
   }
 
-  static byte[] temaValido() {
+  public static byte[] temaValido() {
     String relleno = "Relleno. ".repeat(300);
     return TestPdf.ofPages(
         "TEMA 1. La Constitucion\n\n" + relleno,

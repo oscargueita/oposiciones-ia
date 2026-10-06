@@ -1,6 +1,7 @@
 package com.oposiciones.temario;
 
 import java.util.List;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,16 +17,18 @@ public class TemarioService {
   private final PdfTextExtractor extractor;
   private final TextChunker chunker;
   private final EmbeddingService embeddingService;
+  private final ApplicationEventPublisher eventos;
 
   public TemarioService(TemaRepository temas, FragmentoRepository fragmentos,
       EmbeddingRepository embeddings, PdfTextExtractor extractor, TextChunker chunker,
-      EmbeddingService embeddingService) {
+      EmbeddingService embeddingService, ApplicationEventPublisher eventos) {
     this.temas = temas;
     this.fragmentos = fragmentos;
     this.embeddings = embeddings;
     this.extractor = extractor;
     this.chunker = chunker;
     this.embeddingService = embeddingService;
+    this.eventos = eventos;
   }
 
   public record TemaVista(Tema tema, long numFragmentos) {}
@@ -50,6 +53,7 @@ public class TemarioService {
     temas.save(tema);
     indexar(tema, doc);
     tema.setEstado(Tema.Estado.LISTO);
+    eventos.publishEvent(new TemaListoEvent(tema.getId()));
     return tema;
   }
 
@@ -81,6 +85,7 @@ public class TemarioService {
     borrarContenido(tema.getId());
     indexar(tema, doc);
     tema.setEstado(Tema.Estado.LISTO);
+    eventos.publishEvent(new TemaListoEvent(tema.getId()));
     return tema;
   }
 
@@ -133,5 +138,6 @@ public class TemarioService {
     var frags = fragmentos.findByTemaIdOrderByOrdenAsc(temaId);
     embeddings.deleteByChunkIdIn(frags.stream().map(Fragmento::getId).toList());
     fragmentos.deleteByTemaId(temaId);
+    eventos.publishEvent(new TemaContenidoBorradoEvent(temaId));
   }
 }

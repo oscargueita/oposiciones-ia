@@ -1,0 +1,43 @@
+openapi: 3.0.3
+info:
+  title: Oposiciones IA - Estudio por Voz API (002)
+  version: 0.2.0
+paths:
+  /api/v1/temas/{id}/narracion:
+    get:
+      summary: Playlist ordenada del tema (fragmentos con URL de audio y duración)
+      responses:
+        '200':
+          description: Fragmentos en orden con audio listo o pendiente
+        '404':
+          description: Tema no existe
+        '422':
+          description: Tema vacío, en proceso o en error
+  /api/v1/fragmentos/{fid}/audio:
+    get:
+      summary: Audio WAV del fragmento (lo genera bajo demanda si falta)
+      responses:
+        '200':
+          description: audio/wav del texto literal del fragmento
+        '404':
+          description: Fragmento no existe
+  /api/v1/temas/{id}/progreso:
+    get:
+      summary: Punto guardado (fragmento + segundo) o 404 si no hay
+      responses:
+        '200':
+          description: Progreso con fragmentoId y offsetSeg
+        '404':
+          description: Sin progreso (empezar desde el principio)
+    put:
+      summary: Guardar punto de escucha (pausa/cierre)
+      responses:
+        '200':
+          description: Progreso guardado
+        '422':
+          description: Fragmento no pertenece al tema u offset inválido
+    delete:
+      summary: Marcar narración terminada (borra progreso)
+      responses:
+        '204':
+          description: Progreso borrado
