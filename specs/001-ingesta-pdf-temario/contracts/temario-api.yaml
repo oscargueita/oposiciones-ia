@@ -1,0 +1,74 @@
+openapi: 3.0.3
+info:
+  title: Oposiciones IA - Temario API (001 ingesta)
+  version: 0.1.0
+paths:
+  /api/v1/temas:
+    get:
+      summary: Listar temas
+      responses:
+        '200':
+          description: Lista de temas con estado
+    post:
+      summary: Subir uno o varios PDFs (multipart)
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '201':
+          description: Temas creados (uno por fichero)
+        '422':
+          description: Fichero rechazado (corrupto, sin texto, multi-tema, duplicado) con mensaje accionable
+  /api/v1/temas/{id}:
+    get:
+      summary: Detalle de tema + nº fragmentos
+      responses:
+        '200':
+          description: Tema
+        '404':
+          description: No existe
+    delete:
+      summary: Borrar tema + fragmentos + embeddings
+      responses:
+        '204':
+          description: Borrado
+  /api/v1/temas/{id}/titulo:
+    patch:
+      summary: Renombrar título (editable, se conserva en reemplazos)
+      responses:
+        '200':
+          description: Título actualizado
+  /api/v1/temas/{id}/pdf:
+    put:
+      summary: Reemplazar PDF del tema (conserva id + título)
+      responses:
+        '200':
+          description: Reemplazado y reindexado
+        '422':
+          description: Nuevo PDF inválido o idéntico al actual
+  /api/v1/temas/{id}/fragmentos:
+    get:
+      summary: Listar fragmentos con cita (orden, página, texto literal)
+      responses:
+        '200':
+          description: Fragmentos paginados
+  /api/v1/buscar:
+    get:
+      summary: Búsqueda textual / por palabra sobre fragmentos (base del repaso futuro)
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Top fragmentos con tema + página
