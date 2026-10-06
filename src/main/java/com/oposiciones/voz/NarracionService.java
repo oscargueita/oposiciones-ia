@@ -64,7 +64,24 @@ public class NarracionService {
     TtsService.Audio audio = tts.sintetizar(f.getTexto());
     store.guardar(f.getTemaId(), f.getId(), audio.extension(), audio.datos());
     existente.ifPresent(audios::delete);
-    return audios.save(new AudioFragmento(f.getId(), audio.duracionSeg(), audio.extension()));
+    return guardarConReintento(f.getId(), audio);
+  }
+
+  /** Reintenta el INSERT ante SQLITE_BUSY por escritores concurrentes (WAL + espera). */
+  private AudioFragmento guardarConReintento(Long fragmentoId, TtsService.Audio audio) {
+    for (int i = 1; ; i++) {
+      try {
+        return audios.save(new AudioFragmento(fragmentoId, audio.duracionSeg(), audio.extension()));
+      } catch (org.springframework.dao.DataAccessException e) {
+        if (i >= 5) throw e;
+        try {
+          Thread.sleep(200L * i);
+        } catch (InterruptedException ie) {
+          Thread.currentThread().interrupt();
+          throw e;
+        }
+      }
+    }
   }
 
   @Transactional

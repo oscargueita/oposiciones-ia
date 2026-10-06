@@ -28,8 +28,9 @@ public class SayTtsService implements TtsService {
     try {
       Path tmp = Files.createTempFile("voz-", ".m4a");
       try {
-        // M4A/AAC nativo (~10x menos que WAV); la extensión manda el formato
-        Process p = new ProcessBuilder("say", "-v", voice, "-o", tmp.toString(), texto)
+        // M4A/AAC comprimido (~36kbps, ~10x menos que WAV/PCM); la extensión manda el contenedor
+        Process p = new ProcessBuilder("say", "-v", voice, "-o", tmp.toString(),
+            "--file-format=m4af", "--data-format=aac", texto)
             .redirectErrorStream(true).start();
         String log = new String(p.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         int code = p.waitFor();
