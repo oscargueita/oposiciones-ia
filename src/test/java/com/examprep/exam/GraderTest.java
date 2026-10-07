@@ -28,9 +28,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class GraderTest {
 
-  @Autowired TestGenerator generador;
-  @Autowired Grader corrector;
-  @Autowired SyllabusService temario;
+  @Autowired TestGenerator generator;
+  @Autowired Grader grader;
+  @Autowired SyllabusService syllabus;
   @MockBean EmbeddingService embeddingService;
   @MockBean ChatModel chatModel;
 
@@ -43,19 +43,19 @@ class GraderTest {
         .thenCallRealMethod();
     when(chatModel.call(any(Prompt.class))).thenReturn(new ChatResponse(
         List.of(new Generation(new AssistantMessage(TestGeneratorTest.JSON_OK)))));
-    Topic t = temario.ingest("t.pdf", SyllabusServiceTest.validTopic());
-    created = generador.generate(t.getId(), 2, Difficulty.MEDIUM);
+    Topic t = syllabus.ingest("t.pdf", SyllabusServiceTest.validTopic());
+    created = generator.generate(t.getId(), 2, Difficulty.MEDIUM);
   }
 
   @Test
   void immediateFeedbackAndFinalGrade() {
     var ps = created.questions();
-    var fb1 = corrector.answer(created.test().getId(), ps.get(0).getId(), 1);
+    var fb1 = grader.answer(created.test().getId(), ps.get(0).getId(), 1);
     assertThat(fb1.correct()).isTrue();
     assertThat(fb1.explanation()).isNotBlank();
-    var fb2 = corrector.answer(created.test().getId(), ps.get(1).getId(), 0);
+    var fb2 = grader.answer(created.test().getId(), ps.get(1).getId(), 0);
     assertThat(fb2.correct()).isFalse();
-    var score = corrector.finish(created.test().getId());
+    var score = grader.finish(created.test().getId());
     assertThat(score.score()).isEqualTo(5.0);
     assertThat(score.correctCount()).isEqualTo(1);
     assertThat(score.details()).hasSize(2);
@@ -63,12 +63,36 @@ class GraderTest {
 
   @Test
   void unansweredCountsAsMissAndRefinishFails() {
-    var score = corrector.finish(created.test().getId());
+    var score = grader.finish(created.test().getId());
     assertThat(score.score()).isEqualTo(0.0);
-    assertThatThrownBy(() -> corrector.finish(created.test().getId()))
+    assertThatThrownBy(() -> grader.finish(created.test().getId()))
         .isInstanceOf(SyllabusException.class);
     assertThatThrownBy(
-        () -> corrector.answer(created.test().getId(), created.questions().get(0).getId(), 1))
+        () -> grader.answer(created.test().getId(), created.questions().get(0).getId(), 1))
+        .isInstanceOf(SyllabusException.class);
+  }
+
+  @Test
+  void invalidOptionRejected() {
+    var q = created.questions().get(0);
+    assertThatThrownBy(() -> grader.answer(created.test().getId(), q.getId(), 5))
+        .isInstanceOf(SyllabusException.class);
+  }
+
+  @Test
+  void reanswerUpdatesInsteadOfDuplicating() {    var q = created.questions().get(0);
+    assertThat(grader.answer(created.test().getId(), q.getId(), 0).correct()).isFalse();
+    assertThat(grader.answer(created.test().getId(), q.getId(), 1).correct()).isTrue();
+    var score = grader.finish(created.test().getId());
+    assertThat(score.correctCount()).isEqualTo(1);
+  }
+
+  @Test
+  void foreignQuestionRejected() {
+    var other = generator.generate(created.test().getTopicId(), 1, Difficulty.EASY);
+    var foreign = other.questions().get(0);
+    assertThatThrownBy(
+        () -> grader.answer(created.test().getId(), foreign.getId(), 0))
         .isInstanceOf(SyllabusException.class);
   }
 }

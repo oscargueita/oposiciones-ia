@@ -125,4 +125,14 @@ public class SyllabusServiceTest {
     assertThat(lista).hasSize(1);
     assertThat(lista.get(0).fragmentCount()).isPositive();
   }
+
+  @Test
+  void listedShowsReadyStatusTitleAndPages() {
+    stubEmbed();
+    service.ingest("topic01.pdf", validTopic());
+    var view = service.list().get(0);
+    assertThat(view.topic().getStatus()).isEqualTo(Topic.Status.READY);
+    assertThat(view.topic().getTitle()).isEqualTo("topic01");
+    assertThat(view.topic().getPageCount()).isEqualTo(3);
+  }
 }

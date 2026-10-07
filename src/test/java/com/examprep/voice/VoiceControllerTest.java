@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 class VoiceControllerTest {
 
   @Autowired MockMvc mvc;
-  @Autowired SyllabusService temario;
+  @Autowired SyllabusService syllabus;
   @Autowired NarrationService narration;
   @MockBean EmbeddingService embeddingService;
   @MockBean TtsService tts;

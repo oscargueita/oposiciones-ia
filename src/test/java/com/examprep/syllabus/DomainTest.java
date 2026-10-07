@@ -23,8 +23,7 @@ class DomainTest {
   }
 
   @Test
-  void topicProtectsInvariants() {
-    Topic t = new Topic("T", "t.pdf", ContentHash.of("0".repeat(64)), 3);
+  void topicProtectsInvariants() {    Topic t = new Topic("T", "t.pdf", ContentHash.of("0".repeat(64)), 3);
     assertThatThrownBy(() -> t.rename("  ")).isInstanceOf(SyllabusException.class);
     t.rename("Nuevo");
     assertThat(t.getTitle()).isEqualTo("Nuevo");
@@ -32,6 +31,15 @@ class DomainTest {
     assertThat(t.isReady()).isTrue();
     assertThatThrownBy(() -> t.beginReplacement(ContentHash.of("0".repeat(64)), 3))
         .isInstanceOf(SyllabusException.class);
+  }
+
+  @Test
+  void topicFailureTransition() {
+    Topic t = new Topic("T", "t.pdf", ContentHash.of("0".repeat(64)), 3);
+    t.markFailed("motor caído");
+    assertThat(t.getStatus()).isEqualTo(Topic.Status.FAILED);
+    assertThat(t.getErrorMessage()).isEqualTo("motor caído");
+    assertThat(t.isReady()).isFalse();
   }
 
   @Test

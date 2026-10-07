@@ -25,8 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 class NarrationServiceTest {
 
   @Autowired NarrationService narration;
-  @Autowired SyllabusService temario;
+  @Autowired SyllabusService syllabus;
   @Autowired TopicRepository topics;
+  @Autowired TopicReadyListener listener;
   @MockBean EmbeddingService embeddingService;
   @MockBean TtsService tts;
 
@@ -41,8 +42,17 @@ class NarrationServiceTest {
   }
 
   @Test
+  void backgroundListenerGeneratesAllAudios() {
+    Topic t = syllabus.ingest("topic01.pdf", SyllabusServiceTest.validTopic());
+    listener.generateFor(t.getId());
+    var items = narration.playlist(t.getId());
+    assertThat(items).isNotEmpty();
+    assertThat(items).allMatch(i -> i.durationSec() != null);
+  }
+
+  @Test
   void backgroundGeneratesOrderedPlaylistWithDuration() {
-    Topic t = temario.ingest("topic01.pdf", SyllabusServiceTest.validTopic());
+    Topic t = syllabus.ingest("topic01.pdf", SyllabusServiceTest.validTopic());
     // Tests invoke synchronous generation (@Async does not see the test tx);
     // async wiring is validated on real startup.
     for (var item : narration.playlist(t.getId())) {
@@ -58,7 +68,7 @@ class NarrationServiceTest {
 
   @Test
   void audioReturnsFragmentWav() {
-    Topic t = temario.ingest("topic01.pdf", SyllabusServiceTest.validTopic());
+    Topic t = syllabus.ingest("topic01.pdf", SyllabusServiceTest.validTopic());
     Long fid = narration.playlist(t.getId()).get(0).fragmentId();
     byte[] wav = narration.audioOf(fid).data();
     assertThat(new String(wav, 0, 4)).isEqualTo("RIFF");

@@ -18,14 +18,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class OllamaQuestionGenerationIT {
 
-  @Autowired TestGenerator generador;
-  @Autowired SyllabusService temario;
+  @Autowired TestGenerator generator;
+  @Autowired SyllabusService syllabus;
 
   @Test
   void generatesRealQuestion() {
     assumeTrue(ollamaDisponible(), "Ollama no disponible");
-    Topic t = temario.ingest("t.pdf", com.examprep.syllabus.SyllabusServiceTest.validTopic());
-    var created = generador.generate(t.getId(), 1, Difficulty.MEDIUM);
+    Topic t = syllabus.ingest("t.pdf", com.examprep.syllabus.SyllabusServiceTest.validTopic());
+    var created = generator.generate(t.getId(), 1, Difficulty.MEDIUM);
     assertThat(created.questions()).hasSize(1);
   }
 

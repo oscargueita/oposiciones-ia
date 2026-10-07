@@ -61,6 +61,7 @@ class CheatsheetServiceTest {
     Topic t = syllabus.ingest("topic01.pdf", SyllabusServiceTest.validTopic());
     String first = cheatsheets.cheatsheet(t.getId());
     assertThat(first).contains("## Plazos");
+    assertThat(first).contains("pág");
     String second = cheatsheets.cheatsheet(t.getId());
     assertThat(second).isEqualTo(first);
     verify(chatModel, times(1)).call(any(Prompt.class));

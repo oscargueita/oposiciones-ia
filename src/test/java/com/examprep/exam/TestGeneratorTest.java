@@ -8,6 +8,8 @@ import static org.mockito.Mockito.when;
 
 import com.examprep.syllabus.EmbeddingService;
 import com.examprep.syllabus.Topic;
+import com.examprep.syllabus.ContentHash;
+import com.examprep.syllabus.TopicRepository;
 import com.examprep.syllabus.SyllabusException;
 import com.examprep.syllabus.SyllabusService;
 import com.examprep.syllabus.SyllabusServiceTest;
@@ -31,6 +33,7 @@ class TestGeneratorTest {
 
   @Autowired TestGenerator generator;
   @Autowired SyllabusService syllabus;
+  @Autowired TopicRepository topics;
   @MockBean EmbeddingService embeddingService;
   @MockBean ChatModel chatModel;
 
@@ -104,5 +107,34 @@ class TestGeneratorTest {
     var created = generator.generateMixed(null, 2, Difficulty.EASY);
     assertThat(created.questions()).hasSize(2);
     assertThat(created.test().getScope()).startsWith("Todos");
+  }
+
+  @Test
+  void questionCountOutOfRangeRejected() {
+    stubBase();
+    Topic t = topicWithContent();
+    assertThatThrownBy(() -> generator.generate(t.getId(), 0, Difficulty.EASY))
+        .isInstanceOf(SyllabusException.class);
+    assertThatThrownBy(() -> generator.generate(t.getId(), 51, Difficulty.EASY))
+        .isInstanceOf(SyllabusException.class);
+    assertThatThrownBy(() -> generator.generateMixed(null, 0, Difficulty.EASY))
+        .isInstanceOf(SyllabusException.class);
+  }
+
+  @Test
+  void emptyReadyTopicRejected() {
+    stubBase();
+    Topic t = topics.save(new Topic("empty", "empty.pdf",
+        ContentHash.of("3".repeat(64)), 1));
+    t.markReady();
+    assertThatThrownBy(() -> generator.generate(t.getId(), 2, Difficulty.EASY))
+        .isInstanceOf(SyllabusException.class);
+  }
+
+  @Test
+  void mixedUnknownTopicRejected() {
+    stubBase();
+    assertThatThrownBy(() -> generator.generateMixed(List.of(999999L), 2, Difficulty.EASY))
+        .isInstanceOf(SyllabusException.class);
   }
 }

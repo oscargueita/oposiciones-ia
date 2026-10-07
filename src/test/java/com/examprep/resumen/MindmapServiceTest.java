@@ -91,4 +91,13 @@ class MindmapServiceTest {
     // invalidated: regenerates on next call instead of serving stale content
     assertThat(mindmaps.mindmap(t.getId())).startsWith("mindmap");
   }
+
+  @Test
+  void alwaysInvalidOutputFails() {
+    stubBase();
+    when(chatModel.call(any(Prompt.class))).thenReturn(answer("texto plano sin diagrama"));
+    Topic t = syllabus.ingest("topic01.pdf", SyllabusServiceTest.validTopic());
+    assertThatThrownBy(() -> mindmaps.mindmap(t.getId()))
+        .isInstanceOf(SyllabusException.class);
+  }
 }

@@ -14,6 +14,7 @@ import com.examprep.syllabus.Topic;
 import com.examprep.syllabus.ContentHash;
 import com.examprep.syllabus.TopicRepository;
 import com.examprep.syllabus.SyllabusException;
+import com.examprep.syllabus.SyllabusService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class ReviewServiceTest {
 
-  @Autowired ReviewService repaso;
+  @Autowired ReviewService review;
+  @Autowired SyllabusService syllabus;
   @Autowired TopicRepository topics;
   @Autowired FragmentRepository fragments;
   @Autowired EmbeddingRepository embeddings;
@@ -54,32 +56,55 @@ class ReviewServiceTest {
 
   @Test
   void exactLiteralWinsAndNoResultsIsEmpty() {
-    var res = repaso.review("recurso de alzada", null, 5);
+    var res = review.review("recurso de alzada", null, 5);
     assertThat(res).hasSize(2);
     assertThat(res.get(0).text()).contains("recurso de alzada");
     assertThat(res.get(0).audioUrl()).endsWith("/audio");
-    assertThat(repaso.review("xyzqwerty", null, 5)).isEmpty();
+    assertThat(review.review("xyzqwerty", null, 5)).isEmpty();
   }
 
   @Test
   void caseAndAccentInsensitive() {
-    var res = repaso.review("RECURSO DE ALZADA", null, 5);
+    var res = review.review("RECURSO DE ALZADA", null, 5);
     assertThat(res).isNotEmpty();
     assertThat(TextNormalizer.normalize("Recurso de Alzada")).isEqualTo("recurso de alzada");
   }
 
   @Test
   void shortQueryRejected() {
-    assertThatThrownBy(() -> repaso.review("a", null, 5))
+    assertThatThrownBy(() -> review.review("a", null, 5))
         .isInstanceOf(SyllabusException.class);
   }
 
   @Test
-  void scopedFiltersByTopic() {
-    Topic otro = topics.save(new Topic("o", "o.pdf", ContentHash.of(String.format("%064x", System.nanoTime()+1)), 1));
-    var res = repaso.review("recurso", otro.getId(), 5);
+  void scopedFiltersByTopic() {    Topic otro = topics.save(new Topic("o", "o.pdf", ContentHash.of(String.format("%064x", System.nanoTime()+1)), 1));
+    var res = review.review("recurso", otro.getId(), 5);
     assertThat(res).isEmpty();
-    assertThatThrownBy(() -> repaso.review("recurso", 999999L, 5))
+    assertThatThrownBy(() -> review.review("recurso", 999999L, 5))
         .isInstanceOf(SyllabusException.class);
+  }
+
+  @Test
+  void deletedTopicExcludedFromReview() {
+    var before = review.review("recurso", null, 5);
+    assertThat(before).isNotEmpty();
+    syllabus.delete(topic.getId());
+    assertThat(review.review("recurso", null, 5)).isEmpty();
+  }
+
+  @Test
+  void topKLimitRespected() {
+    var res = review.review("recurso", null, 1);
+    assertThat(res).hasSize(1);
+  }
+
+  @Test
+  void candidatesCarryCitationAndAudio() {
+    var res = review.review("alzada", null, 5);
+    assertThat(res).isNotEmpty();
+    var c = res.get(0);
+    assertThat(c.topicId()).isEqualTo(topic.getId());
+    assertThat(c.page()).isPositive();
+    assertThat(c.audioUrl()).endsWith("/audio");
   }
 }

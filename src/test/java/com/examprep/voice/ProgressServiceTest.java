@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 class ProgressServiceTest {
 
   @Autowired NarrationService narration;
-  @Autowired SyllabusService temario;
+  @Autowired SyllabusService syllabus;
   @MockBean EmbeddingService embeddingService;
   @MockBean TtsService tts;
 
@@ -39,7 +39,7 @@ class ProgressServiceTest {
 
   @Test
   void saveAndRecoverExactSecond() {
-    Topic t = temario.ingest("topic01.pdf", SyllabusServiceTest.validTopic());
+    Topic t = syllabus.ingest("topic01.pdf", SyllabusServiceTest.validTopic());
     Long fid = narration.playlist(t.getId()).get(0).fragmentId();
     narration.saveProgress(t.getId(), fid, 7.5);
     var p = narration.progressOf(t.getId());
@@ -50,16 +50,24 @@ class ProgressServiceTest {
 
   @Test
   void offsetBeyondDurationRejected() {
-    Topic t = temario.ingest("topic01.pdf", SyllabusServiceTest.validTopic());
+    Topic t = syllabus.ingest("topic01.pdf", SyllabusServiceTest.validTopic());
     Long fid = narration.playlist(t.getId()).get(0).fragmentId();
     assertThatThrownBy(() -> narration.saveProgress(t.getId(), fid, 99.0))
         .isInstanceOf(SyllabusException.class);
   }
 
   @Test
+  void negativeOffsetRejected() {
+    Topic t = syllabus.ingest("topic01.pdf", SyllabusServiceTest.validTopic());
+    Long fid = narration.playlist(t.getId()).get(0).fragmentId();
+    assertThatThrownBy(() -> narration.saveProgress(t.getId(), fid, -1.0))
+        .isInstanceOf(SyllabusException.class);
+  }
+
+  @Test
   void fragmentFromOtherTopicRejected() {
-    Topic a = temario.ingest("a.pdf", SyllabusServiceTest.validTopic());
-    Topic b = temario.ingest("b.pdf",
+    Topic a = syllabus.ingest("a.pdf", SyllabusServiceTest.validTopic());
+    Topic b = syllabus.ingest("b.pdf",
         com.examprep.syllabus.TestPdf.ofPages("TEMA 9. Otro\nContenido distinto del otro topic para narration."));
     Long fidB = narration.playlist(b.getId()).get(0).fragmentId();
     assertThatThrownBy(() -> narration.saveProgress(a.getId(), fidB, 1.0))
@@ -69,7 +77,7 @@ class ProgressServiceTest {
 
   @Test
   void finishDeletesProgress() {
-    Topic t = temario.ingest("topic01.pdf", SyllabusServiceTest.validTopic());
+    Topic t = syllabus.ingest("topic01.pdf", SyllabusServiceTest.validTopic());
     Long fid = narration.playlist(t.getId()).get(0).fragmentId();
     narration.saveProgress(t.getId(), fid, 3.0);
     narration.clearProgress(t.getId());
@@ -78,20 +86,20 @@ class ProgressServiceTest {
 
   @Test
   void replaceInvalidatesProgress() {
-    Topic t = temario.ingest("topic01.pdf", SyllabusServiceTest.validTopic());
+    Topic t = syllabus.ingest("topic01.pdf", SyllabusServiceTest.validTopic());
     Long fid = narration.playlist(t.getId()).get(0).fragmentId();
     narration.saveProgress(t.getId(), fid, 3.0);
-    temario.replace(t.getId(), "v2.pdf",
+    syllabus.replace(t.getId(), "v2.pdf",
         com.examprep.syllabus.TestPdf.ofPages("TEMA 1. Nuevo\nContenido nuevo del topic con text suficiente para la narration de prueba."));
     assertThat(narration.progressOf(t.getId())).isEmpty();
   }
 
   @Test
   void deleteTopicRemovesProgress() {
-    Topic t = temario.ingest("topic01.pdf", SyllabusServiceTest.validTopic());
+    Topic t = syllabus.ingest("topic01.pdf", SyllabusServiceTest.validTopic());
     Long fid = narration.playlist(t.getId()).get(0).fragmentId();
     narration.saveProgress(t.getId(), fid, 3.0);
-    temario.delete(t.getId());
+    syllabus.delete(t.getId());
     // the topic no longer exists: progressOf throws 404
     assertThatThrownBy(() -> narration.progressOf(t.getId()))
         .isInstanceOf(SyllabusException.class);

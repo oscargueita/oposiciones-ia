@@ -31,7 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 class ExamControllerTest {
 
   @Autowired MockMvc mvc;
-  @Autowired SyllabusService temario;
+  @Autowired SyllabusService syllabus;
   @MockBean EmbeddingService embeddingService;
   @MockBean ChatModel chatModel;
 

@@ -29,7 +29,12 @@ public class TopicReadyListener {
   @Async
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void generateAudios(TopicReadyEvent event) {
-    for (var f : fragments.findByTopicIdOrderBySequenceAsc(event.topicId())) {
+    generateFor(event.topicId());
+  }
+
+  /** Synchronous core (tested directly; the async wrapper needs a committed tx). */
+  void generateFor(Long topicId) {
+    for (var f : fragments.findByTopicIdOrderBySequenceAsc(topicId)) {
       narration.ensureAudio(f);
     }
   }

@@ -33,6 +33,7 @@ class ResumenControllerTest {
 
   @Autowired MockMvc mvc;
   @Autowired SyllabusService syllabus;
+  @Autowired com.examprep.syllabus.TopicRepository topics;
   @MockBean EmbeddingService embeddingService;
   @MockBean ChatModel chatModel;
 
@@ -72,5 +73,15 @@ class ResumenControllerTest {
   void missingAndInvalidTopics() throws Exception {
     mvc.perform(get("/api/v1/temas/999999/chuleta")).andExpect(status().isNotFound());
     mvc.perform(get("/api/v1/temas/999999/mapa")).andExpect(status().isNotFound());
+  }
+
+  @Test
+  void emptyReadyTopicReturns422() throws Exception {
+    com.examprep.syllabus.Topic empty = topics.save(new com.examprep.syllabus.Topic(
+        "empty", "empty.pdf",
+        com.examprep.syllabus.ContentHash.of("2".repeat(64)), 1));
+    empty.markReady();
+    mvc.perform(get("/api/v1/temas/" + empty.getId() + "/chuleta")).andExpect(status().is(422));
+    mvc.perform(get("/api/v1/temas/" + empty.getId() + "/mapa")).andExpect(status().is(422));
   }
 }
