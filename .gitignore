@@ -36,7 +36,7 @@ target/
 
 ### Oposiciones local-first ###
 oposiciones.db*
-data/temario/*.pdf
+data/**/*.pdf
 data/audio/
 data/voces/
 *.mp3
