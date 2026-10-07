@@ -3,6 +3,7 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 .kotlin
+.idea/
 
 ### Eclipse ###
 .apt_generated
@@ -41,3 +42,7 @@ data/audio/
 data/voces/
 *.mp3
 *.wav
+
+### Python (scripts) ###
+__pycache__/
+*.pyc

@@ -7,7 +7,7 @@ Proyecto: estudio de oposiciones TAI 100% local (Java 21 + Spring Boot 3.3 + Oll
 - Tests: `mvn -B test` (SQLite en `target/`, embeddings y TTS mockeados; sin red salvo Maven Central)
 - Arranque: `mvn -B spring-boot:run` (requiere Ollama con `nomic-embed-text`; `say` solo en macOS)
 - Importante: `spring-boot:run` NO recopia recursos → tras cambiar `src/main/resources`, ejecutar `mvn -B -q process-resources` antes
-- Cerrar app: `pkill -f OposicionesApplication` (el fork JVM sobrevive a `pkill spring-boot:run`; NO dejar 2 JVMs: el puerto 8080 lo retiene la más vieja)
+- Cerrar app: `pkill -f ExamprepApplication` (el fork JVM sobrevive a `pkill spring-boot:run`; NO dejar 2 JVMs: el puerto 8080 lo retiene la más vieja)
 
 ## Gates obligatorios (constitution v1.2.0)
 
