@@ -1,0 +1,14 @@
+# Rutas UI → API (006)
+
+**Base**: misma URL en producción (`/` sirve el build; `/api/*` el backend).
+**Dev**: Vite en :5173 con proxy `/api → http://localhost:8080`.
+
+| Vista | Llamadas |
+|-------|----------|
+| Temas | `GET /api/v1/temas`, `POST /api/v1/temas` (multipart), `DELETE /api/v1/temas/{id}` |
+| Estudio | `GET /api/v1/temas/{id}/narracion`, `GET /api/v1/fragmentos/{fid}/audio` (src de `<audio>`), `GET/PUT /api/v1/temas/{id}/progreso` |
+| Repaso | `GET /api/v1/repasar?q=&topicId?&topK=5`, audio como en Estudio |
+| Tests | `POST /api/v1/temas/{id}/tests?n=&difficulty=`, `POST /api/v1/tests/{id}/responder`, `POST /api/v1/tests/{id}/finalizar`, `GET /api/v1/temas/{id}/tests` |
+| Material | `GET /api/v1/temas/{id}/chuleta` (react-markdown), `GET /api/v1/temas/{id}/mapa` (mermaid.render) |
+
+Sin autenticación (usuario único local). Errores 4xx/5xx → mensaje con acción.

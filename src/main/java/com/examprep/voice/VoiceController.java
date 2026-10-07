@@ -19,7 +19,7 @@ public class VoiceController {
 
   public record ProgressDto(Long topicId, Long fragmentId, double offsetSec) {}
 
-  @GetMapping("/temas/{id}/narration")
+  @GetMapping("/temas/{id}/narracion")
   public List<NarrationService.PlaylistItem> narration(@PathVariable Long id) {
     return narration.playlist(id);
   }

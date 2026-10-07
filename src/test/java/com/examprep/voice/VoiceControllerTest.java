@@ -52,7 +52,7 @@ class VoiceControllerTest {
 
   @Test
   void orderedPlaylistWithAudio() throws Exception {
-    mvc.perform(get("/api/v1/temas/" + topicId + "/narration"))
+    mvc.perform(get("/api/v1/temas/" + topicId + "/narracion"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").isNumber())
         .andExpect(jsonPath("$[0].audioUrl").exists());

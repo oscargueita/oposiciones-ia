@@ -41,7 +41,7 @@ public class NarrationService {
     return fragments.findByTopicIdOrderBySequenceAsc(topic.getId()).stream()
         .map(f -> new PlaylistItem(f.getId(), f.getSequence(), f.getPage(),
             audios.findById(f.getId()).map(FragmentAudio::getDurationSec).orElse(null),
-            "/api/v1/fragments/" + f.getId() + "/audio"))
+            "/api/v1/fragmentos/" + f.getId() + "/audio"))
         .toList();
   }
 
