@@ -1,9 +1,9 @@
 <!-- Sync Impact Report
-Version change: 1.0.0 -> 1.1.0 (commit gate: tests en verde obligatorios)
+Version change: 1.1.0 -> 1.2.0 (principio VIII: código en inglés)
 Modified principles: none
-Added sections: Commit gate en Development Workflow y Governance
+Added sections: VIII. English Code
 Removed sections: none
-TODOs: none
+TODOs: ninguno (refactor aplicado en 2026-10-07: paquetes com.examprep.*, clases/métodos/comentarios en inglés; paths REST y mensajes de error en español; V5 mapea enums)
 -->
 # Oposiciones IA Constitution
 
@@ -30,6 +30,9 @@ TDD: test escrito → aprobado → falla → implementar. Cada feature incluye u
 ### VII. Simplicidad y Spec-Driven
 YAGNI: empezar monolito modular, sin microservicios. Ningún código sin spec aprobada en `.specify/specs/`. Complejidad justificada en plan. Rationale: evitar sobrediseño agéntico.
 
+### VIII. English Code (NON-NEGOTIABLE para código nuevo)
+Identificadores (paquetes, clases, métodos, variables), comentarios y JavaDoc en inglés. Texto visible al usuario (mensajes de error, DTOs de cara al opositor) en español. Commits y specs siguen en español. El código existente debe migrarse al inglés; los tests (verdes por el commit gate) son la red de seguridad del renombrado. Rationale: código legible internacionalmente sin perder UX en español.
+
 ## Technology Stack Constraints
 
 - Java 21 LTS, Spring Boot 3.x, Spring AI + Ollama, Apache Tika, SQLite/H2 + Flyway.
@@ -45,4 +48,4 @@ Flujo obligatorio: `/speckit-specify` → `/speckit-plan` → `/speckit-tasks` �
 
 Esta constitution prevalece sobre toda práctica. Enmiendas con Sync Impact Report, versionado semántico (MAJOR ruptura, MINOR principio nuevo, PATCH clarificación) y revisión en PR. Cada PR verifica: local-first, tests en verde, RAG cita fuente, TTS desacoplado. Ningún commit ni push con `mvn -B test` en rojo, sin excepciones.
 
-**Version**: 1.1.0 | **Ratified**: 2026-10-06 | **Last Amended**: 2026-10-07
+**Version**: 1.2.0 | **Ratified**: 2026-10-06 | **Last Amended**: 2026-10-07

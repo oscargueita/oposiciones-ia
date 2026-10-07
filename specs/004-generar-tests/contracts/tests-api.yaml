@@ -12,11 +12,11 @@ paths:
           schema:
             type: integer
             default: 10
-        - name: dificultad
+        - name: difficulty
           in: query
           schema:
             type: string
-            enum: [FACIL, MEDIO, DIFICIL]
+            enum: [EASY, MEDIUM, HARD]
             default: MEDIO
       responses:
         '201':

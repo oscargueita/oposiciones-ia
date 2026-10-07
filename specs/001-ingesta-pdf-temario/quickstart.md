@@ -8,7 +8,7 @@
 2. Subir tema:
    ```bash
    curl -F "files=@data/temario/tema01.pdf" http://localhost:8080/api/v1/temas
-   # → 201 con id, titulo="tema01", estado PROCESANDO→LISTO
+   # → 201 con id, title="topic01", estado PROCESANDO→LISTO
    ```
 3. Listar: `curl http://localhost:8080/api/v1/temas` → el tema aparece LISTO con páginas y nº fragmentos.
 4. Fidelidad: `curl "http://localhost:8080/api/v1/buscar?q=<frase literal pág.3>"` → devuelve el fragmento con `tema_id + página` correctos.

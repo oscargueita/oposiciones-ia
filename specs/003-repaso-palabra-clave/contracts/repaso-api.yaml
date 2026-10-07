@@ -13,7 +13,7 @@ paths:
           schema:
             type: string
             minLength: 2
-        - name: temaId
+        - name: topicId
           in: query
           required: false
           schema:

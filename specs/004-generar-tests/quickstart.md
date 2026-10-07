@@ -4,7 +4,7 @@
 
 ## Validación end-to-end
 
-1. Generar: `curl -X POST "http://localhost:8080/api/v1/temas/2/tests?n=3&dificultad=MEDIO"` → 201 con 3 preguntas de 4 opciones.
+1. Generar: `curl -X POST "http://localhost:8080/api/v1/temas/2/tests?n=3&difficulty=MEDIUM"` → 201 con 3 preguntas de 4 opciones.
 2. Verificar cita: cada pregunta trae `citaFragmentoId` + página existentes.
 3. Responder: `curl -X POST .../tests/{id}/responder -d '{"preguntaId":P,"opcion":0}'` → acierto + explicación.
 4. Finalizar: `curl -X POST .../tests/{id}/finalizar` → nota sobre 10 + repaso.

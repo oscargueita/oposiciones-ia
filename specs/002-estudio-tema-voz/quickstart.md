@@ -7,7 +7,7 @@
 1. Subir tema: `curl -F "files=@data/temario/tema01.pdf" http://localhost:8080/api/v1/temas` → 201.
 2. Esperar generación en fondo; comprobar playlist: `curl http://localhost:8080/api/v1/temas/{id}/narracion` → fragmentos en orden con `duracionSeg > 0`.
 3. Descargar audio del primer fragmento: `curl http://localhost:8080/api/v1/fragmentos/{fid}/audio -o f1.m4a` → audio reproducible con el texto literal (M4A/AAC desde 2026-10-07; Piper sigue en WAV).
-4. Guardar progreso: `curl -X PUT .../temas/{id}/progreso -d '{"fragmentoId":N,"offsetSeg":12.5}'` → 200.
+4. Guardar progreso: `curl -X PUT .../temas/{id}/progreso -d '{"fragmentId":N,"offsetSec":12.5}'` → 200.
 5. Recuperar progreso: `GET .../temas/{id}/progreso` → mismo fragmento + offset.
 6. Borrar progreso (fin): `DELETE .../temas/{id}/progreso` → 204; `GET` posterior → 404.
 7. Reemplazar PDF del tema → progreso anterior invalidado (GET → 404).

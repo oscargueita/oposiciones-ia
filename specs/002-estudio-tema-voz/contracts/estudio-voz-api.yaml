@@ -26,7 +26,7 @@ paths:
       summary: Punto guardado (fragmento + segundo) o 404 si no hay
       responses:
         '200':
-          description: Progreso con fragmentoId y offsetSeg
+          description: Progreso con fragmentId y offsetSec
         '404':
           description: Sin progreso (empezar desde el principio)
     put:
