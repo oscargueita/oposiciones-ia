@@ -67,7 +67,7 @@ public class SyllabusServiceTest {
     byte[] pdf = TestPdf.ofPages("TEMA 1. Primer topic\nContenido uno.", "TEMA 2. Segundo topic\nContenido dos.");
     assertThatThrownBy(() -> service.ingest("multitopic.pdf", pdf))
         .isInstanceOf(SyllabusException.class)
-        .hasMessageContaining("1 PDF = 1 topic");
+        .hasMessageContaining("1 PDF = 1 tema");
   }
 
   @Test

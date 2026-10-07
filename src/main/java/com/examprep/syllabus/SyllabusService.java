@@ -35,24 +35,24 @@ public class SyllabusService {
 
   @Transactional
   public Topic ingest(String filename, byte[] bytes) {
-    String sha = Sha256.of(bytes);
-    if (topics.findByContentSha256(sha).isPresent()) {
+    ContentHash hash = ContentHash.ofBytes(bytes);
+    if (topics.findByContentHash(hash).isPresent()) {
       throw new SyllabusException("Ya cargado (mismo contenido): " + filename, 422);
     }
     var doc = extractor.extract(filename, bytes);
     if (doc.fullText().length() < MIN_TEXT_CHARS) {
       throw new SyllabusException("Sin texto extraíble (¿PDF escaneado?): " + filename, 422);
     }
-    var declarados = chunker.declaredTopics(doc.fullText());
-    if (declarados.size() > 1) {
+    var declared = chunker.declaredTopics(doc.fullText());
+    if (declared.size() > 1) {
       throw new SyllabusException(
-          "Divide el fichero, 1 PDF = 1 topic en v1 (detectados topics " + declarados + "): " + filename, 422);
+          "Divide el fichero, 1 PDF = 1 tema en v1 (detectados temas " + declared + "): " + filename, 422);
     }
     String title = filename.replaceFirst("\\.[^.]+$", "");
-    Topic topic = new Topic(title, filename, sha, doc.pages().size());
+    Topic topic = new Topic(title, filename, hash, doc.pages().size());
     topics.save(topic);
     index(topic, doc);
-    topic.setStatus(Topic.Status.READY);
+    topic.markReady();
     eventos.publishEvent(new TopicReadyEvent(topic.getId()));
     return topic;
   }
@@ -61,30 +61,24 @@ public class SyllabusService {
   public Topic replace(Long id, String filename, byte[] bytes) {
     Topic topic = topics.findById(id)
         .orElseThrow(() -> new SyllabusException("Tema no existe: " + id, 404));
-    String sha = Sha256.of(bytes);
-    if (sha.equals(topic.getContentSha256())) {
-      throw new SyllabusException("El PDF es idéntico al actual, nada que reemplazar", 422);
-    }
-    if (topics.findByContentSha256(sha).filter(t -> !t.getId().equals(id)).isPresent()) {
+    ContentHash hash = ContentHash.ofBytes(bytes);
+    if (topics.findByContentHash(hash).filter(t -> !t.getId().equals(id)).isPresent()) {
       throw new SyllabusException("Ese contenido ya está cargado en otro tema", 422);
     }
     var doc = extractor.extract(filename, bytes);
     if (doc.fullText().length() < MIN_TEXT_CHARS) {
       throw new SyllabusException("Sin texto extraíble (¿PDF escaneado?): " + filename, 422);
     }
-    var declarados = chunker.declaredTopics(doc.fullText());
-    if (declarados.size() > 1) {
+    var declared = chunker.declaredTopics(doc.fullText());
+    if (declared.size() > 1) {
       throw new SyllabusException(
-          "Divide el fichero, 1 PDF = 1 topic en v1 (detectados topics " + declarados + ")", 422);
+          "Divide el fichero, 1 PDF = 1 tema en v1 (detectados temas " + declared + ")", 422);
     }
-    // The custom title is preserved (clarification A): only content and origin change.
-    topic.setContentSha256(sha);
-    topic.setPageCount(doc.pages().size());
-    topic.setStatus(Topic.Status.PROCESSING);
-    topic.setErrorMessage(null);
+    // The custom title is preserved (clarification A): only content changes.
+    topic.beginReplacement(hash, doc.pages().size());
     deleteContent(topic.getId());
     index(topic, doc);
-    topic.setStatus(Topic.Status.READY);
+    topic.markReady();
     eventos.publishEvent(new TopicReadyEvent(topic.getId()));
     return topic;
   }
@@ -93,10 +87,7 @@ public class SyllabusService {
   public Topic rename(Long id, String title) {
     Topic topic = topics.findById(id)
         .orElseThrow(() -> new SyllabusException("Tema no existe: " + id, 404));
-    if (title == null || title.isBlank()) {
-      throw new SyllabusException("El título no puede estar vacío", 422);
-    }
-    topic.setTitle(title.strip());
+    topic.rename(title);
     return topic;
   }
 

@@ -11,6 +11,7 @@ import com.examprep.syllabus.EmbeddingService;
 import com.examprep.syllabus.Fragment;
 import com.examprep.syllabus.FragmentRepository;
 import com.examprep.syllabus.Topic;
+import com.examprep.syllabus.ContentHash;
 import com.examprep.syllabus.TopicRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +42,7 @@ class ReviewControllerTest {
         .thenCallRealMethod();
     when(embeddingService.decode(org.mockito.ArgumentMatchers.any(byte[].class)))
         .thenCallRealMethod();
-    Topic t = topics.save(new Topic("t", "t.pdf", "rc" + System.nanoTime(), 1));
+    Topic t = topics.save(new Topic("t", "t.pdf", ContentHash.of(String.format("%064x", System.nanoTime()+2)), 1));
     topicId = t.getId();
     Fragment f = fragments.save(new Fragment(t.getId(), 0, 3, "El recurso de alzada se interpone en un mes."));
     embeddings.save(new ChunkEmbedding(f.getId(), embeddingService.encode(new float[]{0.6f, 0.8f, 0})));

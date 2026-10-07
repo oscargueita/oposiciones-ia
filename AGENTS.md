@@ -9,7 +9,7 @@ Proyecto: estudio de oposiciones TAI 100% local (Java 21 + Spring Boot 3.3 + Oll
 - Importante: `spring-boot:run` NO recopia recursos → tras cambiar `src/main/resources`, ejecutar `mvn -B -q process-resources` antes
 - Cerrar app: `pkill -f ExamprepApplication` (el fork JVM sobrevive a `pkill spring-boot:run`; NO dejar 2 JVMs: el puerto 8080 lo retiene la más vieja)
 
-## Gates obligatorios (constitution v1.2.0)
+## Gates obligatorios (constitution v1.3.0)
 
 - **Commit gate: PROHIBIDO commitear/pushear con tests en rojo. Todo commit exige `mvn -B test` 100% verde justo antes.**
 - **English code: identificadores + comentarios + JavaDoc en inglés; mensajes visibles al usuario en español.**

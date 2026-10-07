@@ -92,7 +92,7 @@ class TestGeneratorTest {
     var created = generator.generateMixed(List.of(a.getId(), b.getId()), 4, Difficulty.MEDIUM);
     assertThat(created.questions()).hasSize(4);
     assertThat(created.test().getTopicId()).isNull();
-    assertThat(created.test().getAlcance()).contains("Mixto");
+    assertThat(created.test().getScope()).contains("Mixto");
     assertThat(created.questions().stream().map(Question::getCitedTopicId).distinct()).hasSize(2);
   }
 
@@ -103,6 +103,6 @@ class TestGeneratorTest {
     topicWithContent();
     var created = generator.generateMixed(null, 2, Difficulty.EASY);
     assertThat(created.questions()).hasSize(2);
-    assertThat(created.test().getAlcance()).startsWith("Todos");
+    assertThat(created.test().getScope()).startsWith("Todos");
   }
 }

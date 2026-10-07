@@ -20,6 +20,8 @@ public class Mindmap {
   protected Mindmap() {}
 
   public Mindmap(Long topicId, String mermaid) {
+    if (topicId == null) throw new IllegalArgumentException("Tema obligatorio");
+    if (mermaid == null || mermaid.isBlank()) throw new IllegalArgumentException("Mermaid no vacío");
     this.topicId = topicId;
     this.mermaid = mermaid;
   }

@@ -28,7 +28,7 @@ class SearchControllerTest {
   @Test
   void searchReturnsTopicAndPageCitation() throws Exception {
     when(embeddingService.embed(anyString())).thenReturn(new float[]{1});
-    Topic t = topics.save(new Topic("topic01", "topic01.pdf", "abc", 3));
+    Topic t = topics.save(new Topic("topic01", "topic01.pdf", ContentHash.of("a".repeat(64)), 3));
     Fragment f = fragments.save(new Fragment(t.getId(), 0, 2, "el plazo es de quince dias"));
     when(embeddingService.search(anyString(), anyInt()))
         .thenReturn(List.of(new EmbeddingService.ScoredChunk(f, 0.95)));

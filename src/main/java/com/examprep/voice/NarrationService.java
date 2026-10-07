@@ -89,19 +89,14 @@ public class NarrationService {
     requireExists(topicId);
     Fragment f = fragments.findById(fragmentId)
         .orElseThrow(() -> new SyllabusException("Fragmento no existe: " + fragmentId, 404));
-    if (!f.getTopicId().equals(topicId)) {
+    if (!f.belongsTo(topicId)) {
       throw new SyllabusException("El fragmento no pertenece al tema", 422);
     }
     ensureAudio(f);
-    double duracion = audios.findById(f.getId()).orElseThrow().getDurationSec();
-    if (offsetSec < 0 || offsetSec > duracion) {
-      throw new SyllabusException("Offset fuera del audio (0-" + duracion + "s)", 422);
-    }
+    double duration = audios.findById(f.getId()).orElseThrow().getDurationSec();
     ListeningProgress p = progresos.findById(topicId)
-        .orElse(new ListeningProgress(topicId, fragmentId, offsetSec));
-    p.setFragmentId(fragmentId);
-    p.setOffsetSec(offsetSec);
-    p.setUpdatedAt(java.time.LocalDateTime.now());
+        .orElseGet(() -> new ListeningProgress(topicId, fragmentId, 0));
+    p.moveTo(fragmentId, offsetSec, duration);
     return progresos.save(p);
   }
 

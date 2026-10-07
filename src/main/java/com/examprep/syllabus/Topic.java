@@ -3,6 +3,11 @@ package com.examprep.syllabus;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+/**
+ * Aggregate root: un tema del temario (1 PDF = 1 tema).
+ * Protege sus invariantes: título no vacío, páginas > 0,
+ * y transiciones de estado válidas. Sin setters públicos.
+ */
 @Entity
 @Table(name = "temas")
 public class Topic {
@@ -19,8 +24,8 @@ public class Topic {
   @Column(name = "origen_nombre", nullable = false)
   private String sourceName;
 
-  @Column(name = "content_sha256", nullable = false, unique = true, length = 64)
-  private String contentSha256;
+  @Embedded
+  private ContentHash contentHash;
 
   @Column(name = "num_paginas", nullable = false)
   private int pageCount;
@@ -37,24 +42,57 @@ public class Topic {
 
   protected Topic() {}
 
-  public Topic(String title, String sourceName, String contentSha256, int pageCount) {
-    this.title = title;
+  public Topic(String title, String sourceName, ContentHash contentHash, int pageCount) {
+    rename(title);
+    if (sourceName == null || sourceName.isBlank()) {
+      throw new IllegalArgumentException("Origen vacío");
+    }
+    if (pageCount <= 0) throw new IllegalArgumentException("Páginas > 0");
     this.sourceName = sourceName;
-    this.contentSha256 = contentSha256;
+    this.contentHash = contentHash;
     this.pageCount = pageCount;
+  }
+
+  /** Cambia el título editable (se conserva en reemplazos). */
+  public void rename(String title) {
+    if (title == null || title.isBlank()) {
+      throw new SyllabusException("El título no puede estar vacío", 422);
+    }
+    this.title = title.strip();
+  }
+
+  /** Sustituye el contenido manteniendo id y título. */
+  public void beginReplacement(ContentHash newHash, int newPageCount) {
+    if (newHash.equals(this.contentHash)) {
+      throw new SyllabusException("El PDF es idéntico al actual, nada que reemplazar", 422);
+    }
+    if (newPageCount <= 0) throw new IllegalArgumentException("Páginas > 0");
+    this.contentHash = newHash;
+    this.pageCount = newPageCount;
+    this.status = Status.PROCESSING;
+    this.errorMessage = null;
+  }
+
+  public void markReady() {
+    this.status = Status.READY;
+    this.errorMessage = null;
+  }
+
+  public void markFailed(String reason) {
+    this.status = Status.FAILED;
+    this.errorMessage = reason;
+  }
+
+  public boolean isReady() {
+    return status == Status.READY;
   }
 
   public Long getId() { return id; }
   public String getTitle() { return title; }
-  public void setTitle(String title) { this.title = title; }
   public String getSourceName() { return sourceName; }
-  public String getContentSha256() { return contentSha256; }
-  public void setContentSha256(String sha) { this.contentSha256 = sha; }
+  public ContentHash getContentHash() { return contentHash; }
   public int getPageCount() { return pageCount; }
-  public void setPageCount(int n) { this.pageCount = n; }
   public Status getStatus() { return status; }
-  public void setStatus(Status status) { this.status = status; }
   public String getErrorMessage() { return errorMessage; }
-  public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
   public LocalDateTime getCreatedAt() { return createdAt; }
 }

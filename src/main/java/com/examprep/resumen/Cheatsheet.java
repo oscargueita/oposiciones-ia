@@ -20,6 +20,8 @@ public class Cheatsheet {
   protected Cheatsheet() {}
 
   public Cheatsheet(Long topicId, String markdown) {
+    if (topicId == null) throw new IllegalArgumentException("Tema obligatorio");
+    if (markdown == null || markdown.isBlank()) throw new IllegalArgumentException("Markdown no vacío");
     this.topicId = topicId;
     this.markdown = markdown;
   }

@@ -2,6 +2,10 @@ package com.examprep.exam;
 
 import jakarta.persistence.*;
 
+/**
+ * Answer given to a question. Immutable once created: re-answering
+ * creates a new instance (upsert at repository level).
+ */
 @Entity
 @Table(name = "respuesta")
 public class Answer {
@@ -18,15 +22,20 @@ public class Answer {
 
   protected Answer() {}
 
-  public Answer(Long questionId, int option, int correct) {
-    this.questionId = questionId;
+  /** Creates the answer to {@code question}, grading it immediately. */
+  public Answer(Question question, int option) {
+    if (question == null) throw new IllegalArgumentException("Pregunta obligatoria");
+    if (option < 0 || option > 3) throw new IllegalArgumentException("Opción 0-3");
+    this.questionId = question.getId();
     this.option = option;
-    this.correct = correct;
+    this.correct = option == question.getCorrectIndex() ? 1 : 0;
+  }
+
+  public boolean isCorrect() {
+    return correct == 1;
   }
 
   public Long getQuestionId() { return questionId; }
   public int getOption() { return option; }
-  public void setOption(int option) { this.option = option; }
   public int getCorrect() { return correct; }
-  public void setCorrect(int correct) { this.correct = correct; }
 }

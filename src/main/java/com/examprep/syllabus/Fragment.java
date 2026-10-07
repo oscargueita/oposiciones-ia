@@ -25,10 +25,18 @@ public class Fragment {
   protected Fragment() {}
 
   public Fragment(Long topicId, int sequence, int page, String text) {
+    if (topicId == null) throw new IllegalArgumentException("Tema obligatorio");
+    if (sequence < 0) throw new IllegalArgumentException("Orden >= 0");
+    if (page < 1) throw new IllegalArgumentException("Página >= 1");
+    if (text == null || text.isBlank()) throw new IllegalArgumentException("Texto no vacío");
     this.topicId = topicId;
     this.sequence = sequence;
     this.page = page;
     this.text = text;
+  }
+
+  public boolean belongsTo(Long topicId) {
+    return this.topicId.equals(topicId);
   }
 
   public Long getId() { return id; }

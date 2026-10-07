@@ -53,7 +53,7 @@ public class ExamController {
 
   private TestDto toDto(TestGenerator.CreatedTest created) {
     var t = created.test();
-    return new TestDto(t.getId(), t.getTopicId(), t.getAlcance(),
+    return new TestDto(t.getId(), t.getTopicId(), t.getScope(),
         t.getDifficulty().name(), t.getQuestionCount(), t.getStatus().name(), created.notice(),
         created.questions().stream().map(this::dto).toList());
   }
@@ -74,7 +74,7 @@ public class ExamController {
   }
 
   private HistoryDto historyDto(GeneratedTest t) {
-    return new HistoryDto(t.getId(), t.getTopicId(), t.getAlcance(), t.getDifficulty().name(),
+    return new HistoryDto(t.getId(), t.getTopicId(), t.getScope(), t.getDifficulty().name(),
         t.getQuestionCount(), t.getStatus().name(), scoreIfGraded(t), t.getCreatedAt().toString());
   }
 

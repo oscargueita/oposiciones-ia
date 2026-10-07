@@ -1,5 +1,6 @@
 package com.examprep.voice;
 
+import com.examprep.syllabus.SyllabusException;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -23,16 +24,25 @@ public class ListeningProgress {
   protected ListeningProgress() {}
 
   public ListeningProgress(Long topicId, Long fragmentId, double offsetSec) {
+    if (topicId == null) throw new IllegalArgumentException("Tema obligatorio");
     this.topicId = topicId;
+    moveTo(fragmentId, offsetSec, Double.MAX_VALUE);
+  }
+
+  /** Mueve el punto de escucha validando contra la duración del audio. */
+  public void moveTo(Long fragmentId, double offsetSec, double audioDurationSec) {
+    if (fragmentId == null) throw new IllegalArgumentException("Fragmento obligatorio");
+    if (offsetSec < 0 || offsetSec > audioDurationSec) {
+      throw new SyllabusException(
+          "Offset fuera del audio (0-" + audioDurationSec + "s)", 422);
+    }
     this.fragmentId = fragmentId;
     this.offsetSec = offsetSec;
+    this.updatedAt = LocalDateTime.now();
   }
 
   public Long getTopicId() { return topicId; }
   public Long getFragmentId() { return fragmentId; }
   public double getOffsetSec() { return offsetSec; }
-  public void setFragmentId(Long fragmentId) { this.fragmentId = fragmentId; }
-  public void setOffsetSec(double offsetSec) { this.offsetSec = offsetSec; }
-  public void setUpdatedAt(LocalDateTime t) { this.updatedAt = t; }
   public LocalDateTime getUpdatedAt() { return updatedAt; }
 }

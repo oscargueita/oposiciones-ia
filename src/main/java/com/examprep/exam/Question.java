@@ -42,6 +42,13 @@ public class Question {
 
   public Question(Long testId, int sequence, String statement, String options, int correctIndex,
       String explanation, Long citedTopicId, Long citedFragmentId, int citedPage) {
+    if (testId == null) throw new IllegalArgumentException("Test obligatorio");
+    if (sequence < 0) throw new IllegalArgumentException("Orden >= 0");
+    if (statement == null || statement.isBlank()) throw new IllegalArgumentException("Enunciado no vacío");
+    if (options == null || options.isBlank()) throw new IllegalArgumentException("Opciones no vacías");
+    if (correctIndex < 0 || correctIndex > 3) throw new IllegalArgumentException("Correcta 0-3");
+    if (explanation == null || explanation.isBlank()) throw new IllegalArgumentException("Explicación no vacía");
+    if (citedPage < 1) throw new IllegalArgumentException("Página >= 1");
     this.testId = testId;
     this.sequence = sequence;
     this.statement = statement;
@@ -55,6 +62,10 @@ public class Question {
 
   public Long getId() { return id; }
   public Long getTestId() { return testId; }
+
+  public boolean belongsTo(Long testId) {
+    return this.testId.equals(testId);
+  }
   public int getSequence() { return sequence; }
   public String getStatement() { return statement; }
   public String getOptions() { return options; }

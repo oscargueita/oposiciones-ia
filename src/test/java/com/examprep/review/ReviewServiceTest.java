@@ -11,6 +11,7 @@ import com.examprep.syllabus.EmbeddingService;
 import com.examprep.syllabus.Fragment;
 import com.examprep.syllabus.FragmentRepository;
 import com.examprep.syllabus.Topic;
+import com.examprep.syllabus.ContentHash;
 import com.examprep.syllabus.TopicRepository;
 import com.examprep.syllabus.SyllabusException;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,7 +41,7 @@ class ReviewServiceTest {
         .thenCallRealMethod();
     when(embeddingService.decode(org.mockito.ArgumentMatchers.any(byte[].class)))
         .thenCallRealMethod();
-    topic = topics.save(new Topic("t", "t.pdf", "sh" + System.nanoTime(), 1));
+    topic = topics.save(new Topic("t", "t.pdf", ContentHash.of(String.format("%064x", System.nanoTime())), 1));
     save("El recurso de alzada se interpone en un mes.", new float[]{0.6f, 0.8f, 0});
     save("La organización administrativa y sus principios rectores.", new float[]{1, 0, 0});
     save("Sobre contratación del sector público y licitaciones.", new float[]{0, 0, 1});
@@ -75,7 +76,7 @@ class ReviewServiceTest {
 
   @Test
   void scopedFiltersByTopic() {
-    Topic otro = topics.save(new Topic("o", "o.pdf", "ot" + System.nanoTime(), 1));
+    Topic otro = topics.save(new Topic("o", "o.pdf", ContentHash.of(String.format("%064x", System.nanoTime()+1)), 1));
     var res = repaso.review("recurso", otro.getId(), 5);
     assertThat(res).isEmpty();
     assertThatThrownBy(() -> repaso.review("recurso", 999999L, 5))

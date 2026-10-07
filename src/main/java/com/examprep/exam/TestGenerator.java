@@ -106,7 +106,7 @@ public class TestGenerator {
     for (Fragment f : pool) {
       if (createdItems.size() >= target || used.size() >= pool.size()) break;
       if (!used.add(f.getId())) continue;
-      QuestionJson pj = intentar(f, difficulty, converter);
+      QuestionJson pj = attempt(f, difficulty, converter);
       if (pj == null) continue;
       try {
         createdItems.add(questions.save(new Question(test.getId(), createdItems.size(), pj.statement(),
@@ -120,11 +120,11 @@ public class TestGenerator {
       tests.delete(test);
       throw new SyllabusException("No se pudo generar ninguna pregunta válida", 422);
     }
-    test.setQuestionCount(createdItems.size());
+    test.adjustQuestionCount(createdItems.size());
     return new CreatedTest(test, createdItems, notice);
   }
 
-  private QuestionJson intentar(Fragment f, Difficulty difficulty,
+  private QuestionJson attempt(Fragment f, Difficulty difficulty,
       BeanOutputConverter<QuestionJson> converter) {
     for (int i = 0; i < MAX_REINTENTOS; i++) {
       try {

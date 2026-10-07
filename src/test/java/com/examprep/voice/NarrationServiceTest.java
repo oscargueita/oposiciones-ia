@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.examprep.syllabus.EmbeddingService;
 import com.examprep.syllabus.Topic;
+import com.examprep.syllabus.ContentHash;
 import com.examprep.syllabus.TopicRepository;
 import com.examprep.syllabus.SyllabusException;
 import com.examprep.syllabus.SyllabusService;
@@ -65,8 +66,8 @@ class NarrationServiceTest {
 
   @Test
   void emptyTopicCannotBeNarrated() {
-    Topic t = topics.save(new Topic("vacio", "vacio.pdf", "deadbeef", 1));
-    t.setStatus(Topic.Status.READY);
+    Topic t = topics.save(new Topic("vacio", "vacio.pdf", ContentHash.of("0".repeat(64)), 1));
+    t.markReady();
     assertThatThrownBy(() -> narration.playlist(t.getId()))
         .isInstanceOf(SyllabusException.class)
         .hasMessageContaining("sin contenido");
@@ -74,8 +75,8 @@ class NarrationServiceTest {
 
   @Test
   void processingTopicCannotBeNarrated() {
-    Topic t = temario.ingest("topic01.pdf", SyllabusServiceTest.validTopic());
-    t.setStatus(Topic.Status.PROCESSING);
+    Topic t = topics.save(
+        new Topic("proc", "proc.pdf", ContentHash.of("1".repeat(64)), 2));
     assertThatThrownBy(() -> narration.playlist(t.getId()))
         .isInstanceOf(SyllabusException.class)
         .hasMessageContaining("no listo");

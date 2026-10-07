@@ -31,23 +31,26 @@ public class Grader {
     GeneratedTest test = requirePending(testId);
     Question p = questions.findById(questionId)
         .orElseThrow(() -> new SyllabusException("Pregunta no existe: " + questionId, 404));
-    if (!p.getTestId().equals(test.getId())) {
+    if (!p.belongsTo(test.getId())) {
       throw new SyllabusException("La pregunta no pertenece al test", 422);
     }
-    if (option < 0 || option > 3) throw new SyllabusException("Opción 0-3", 422);
-    boolean correct = option == p.getCorrectIndex();
-    answers.findById(questionId).ifPresentOrElse(
-        r -> { r.setOption(option); r.setCorrect(correct ? 1 : 0); },
-        () -> answers.save(new Answer(questionId, option, correct ? 1 : 0)));
-    return new Feedback(correct, p.getCorrectIndex(), p.getExplanation(),
+    final Answer given;
+    try {
+      given = new Answer(p, option);
+    } catch (IllegalArgumentException e) {
+      throw new SyllabusException("Opción 0-3", 422);
+    }
+    answers.findById(questionId).ifPresent(answers::delete);
+    answers.save(given);
+    return new Feedback(given.isCorrect(), p.getCorrectIndex(), p.getExplanation(),
         p.getCitedTopicId(), p.getCitedFragmentId(), p.getCitedPage());
   }
 
   @Transactional
   public Grade finish(Long testId) {
     GeneratedTest test = requirePending(testId);
-    test.setStatus(GeneratedTest.Status.GRADED);
-    return calcular(testId);
+    test.finish();
+    return calculate(testId);
   }
 
   @Transactional(readOnly = true)
@@ -55,23 +58,27 @@ public class Grader {
     if (!tests.existsById(testId)) {
       throw new SyllabusException("Test no existe: " + testId, 404);
     }
-    return calcular(testId);
+    return calculate(testId);
   }
 
-  private Grade calcular(Long testId) {
+  private Grade calculate(Long testId) {
+    GeneratedTest test = tests.findById(testId)
+        .orElseThrow(() -> new SyllabusException("Test no existe: " + testId, 404));
     List<Question> ps = questions.findByTestIdOrderBySequenceAsc(testId);
-    int correctCount = 0;
+    var byQuestion = new java.util.HashMap<Long, Answer>();
+    for (Question p : ps) {
+      answers.findById(p.getId()).ifPresent(a -> byQuestion.put(p.getId(), a));
+    }
+    Score score = test.grade(ps, byQuestion);
     var details = new java.util.ArrayList<Detail>();
     for (Question p : ps) {
       var r = answers.findById(p.getId());
       Integer selected = r.map(Answer::getOption).orElse(null);
-      boolean ok = r.map(x -> x.getCorrect() == 1).orElse(false);
-      if (ok) correctCount++;
+      boolean ok = r.map(Answer::isCorrect).orElse(false);
       details.add(new Detail(p.getId(), p.getStatement(), selected, p.getCorrectIndex(), ok,
           p.getExplanation()));
     }
-    double score = ps.isEmpty() ? 0 : 10.0 * correctCount / ps.size();
-    return new Grade(Math.round(score * 100.0) / 100.0, correctCount, ps.size() - correctCount, details);
+    return new Grade(score.value(), score.correctCount(), score.wrongCount(), details);
   }
 
   private GeneratedTest requirePending(Long testId) {
