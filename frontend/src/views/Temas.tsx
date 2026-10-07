@@ -53,17 +53,14 @@ export default function Temas() {
       </label>
       <ul>
         {topics.map((t) => (
-          <li key={t.id}>
-            <Link to={`/temas/${t.id}`}>{t.title}</Link> — {t.status} · {t.fragmentCount}{' '}
-            fragmentos
-            {t.status === 'READY' && (
-              <>
-                {' '}
-                <Link to={`/material?tema=${t.id}`}>chuleta/mapa</Link>
-              </>
-            )}
+          <article key={t.id}>
+            <Link to={`/temas/${t.id}`}>{t.title}</Link>
+            <p>
+              {t.status} · {t.fragmentCount} fragmentos{' '}
+              {t.status === 'READY' && <Link to={`/material?tema=${t.id}`}>chuleta/mapa</Link>}
+            </p>
             <button onClick={() => void remove(t.id)}>Borrar</button>
-          </li>
+          </article>
         ))}
       </ul>
     </div>

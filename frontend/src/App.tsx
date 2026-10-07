@@ -8,11 +8,23 @@ import './App.css';
 
 export default function App() {
   return (
-    <div>
+    <main className="container">
       <h1>Oposiciones IA (local)</h1>
       <nav>
-        <Link to="/temas">Temas</Link> | <Link to="/repaso">Repaso</Link> |{' '}
-        <Link to="/tests">Tests</Link> | <Link to="/material">Chuleta/Mapa</Link>
+        <ul>
+          <li>
+            <Link to="/temas">Temas</Link>
+          </li>
+          <li>
+            <Link to="/repaso">Repaso</Link>
+          </li>
+          <li>
+            <Link to="/tests">Tests</Link>
+          </li>
+          <li>
+            <Link to="/material">Chuleta/Mapa</Link>
+          </li>
+        </ul>
       </nav>
       <Routes>
         <Route path="/" element={<Temas />} />
@@ -22,6 +34,6 @@ export default function App() {
         <Route path="/tests" element={<Tests />} />
         <Route path="/material" element={<Material />} />
       </Routes>
-    </div>
+    </main>
   );
 }
