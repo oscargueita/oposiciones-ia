@@ -1,9 +1,9 @@
 <!-- Sync Impact Report
-Version change: 1.2.0 -> 1.3.0 (principio IX: DDD pragmático)
-Modified principles: none
-Added sections: IX. Domain-Driven Design pragmático
+Version change: 1.3.0 -> 1.4.0 (TDD operativo en VI + principio X: CQRS)
+Modified principles: VI (ciclo RED-GREEN-REFACTOR explícito)
+Added sections: X. CQRS pragmático
 Removed sections: none
-TODOs: enriquecer entidades existentes (en curso)
+TODOs: ninguno
 -->
 # Oposiciones IA Constitution
 
@@ -25,13 +25,21 @@ Metadata (temas, chunks, tests, chuletas) en SQLite/H2 local en fichero versiona
 Voz tras interfaz `TtsService.textToSpeech(text)->audio`. Implementación v1: Piper local o `say` macOS. Ningún caso de uso (estudiar/repasar) llama al motor TTS directamente. Rationale: cambiar de voz sin tocar dominio.
 
 ### VI. Test-First (NON-NEGOTIABLE)
-TDD: test escrito → aprobado → falla → implementar. Cada feature incluye unit + integración (ingesta PDF real, RAG contra Ollama Testcontainers/mock, endpoints REST). Cobertura mínima en servicios de dominio. Rationale: fiabilidad del material de estudio.
+TDD obligatorio con ciclo estricto: RED (test que falla, ejecutado y visto fallar)
+→ GREEN (implementación mínima que lo pasa) → REFACTOR (limpiar sin romper) →
+suite completa en verde. Prohibido código de producción sin su test en rojo
+previo; prohibido commitear sin `mvn -B test` 100% verde. Cada feature incluye
+unit + integración (ingesta PDF real, RAG contra Ollama Testcontainers/mock,
+endpoints REST). Rationale: fiabilidad del material de estudio.
 
 ### VII. Simplicidad y Spec-Driven
 YAGNI: empezar monolito modular, sin microservicios. Ningún código sin spec aprobada en `.specify/specs/`. Complejidad justificada en plan. Rationale: evitar sobrediseño agéntico.
 
 ### IX. Domain-Driven Design pragmático
 Agregados con raíz que protege invariantes (Topic, GeneratedTest, ListeningProgress); entidades con comportamiento, no getters/setters públicos para mutar; value objects (ContentHash, Score) para conceptos con validación; servicios de aplicación solo orquestan (repositorios + eventos); el dominio no conoce infraestructura (Tika, Ollama, `say`). Rationale: lógica de negocio testeable y a prueba de estados inválidos.
+
+### X. CQRS pragmático (Commands vs Queries)
+Separación estricta: los comandos mutan (nombrados con verbo: `ingest`, `answer`, `saveProgress`; `@Transactional`; devuelven IDs/estado) y las queries solo leen (nombradas con sustantivo o `get`/`find`/`list`; `@Transactional(readOnly)`; cero efectos secundarios). Ningún endpoint GET muta estado; los writes entre agregados viajan por eventos de dominio, no por llamadas directas. Rationale: lecturas rápidas y seguras (RAG, playlists) independientes de escrituras.
 
 ### VIII. English Code (NON-NEGOTIABLE para código nuevo)
 Identificadores (paquetes, clases, métodos, variables), comentarios y JavaDoc en inglés. Texto visible al usuario (mensajes de error, DTOs de cara al opositor) en español. Commits y specs siguen en español. El código existente debe migrarse al inglés; los tests (verdes por el commit gate) son la red de seguridad del renombrado. Rationale: código legible internacionalmente sin perder UX en español.
@@ -51,4 +59,4 @@ Flujo obligatorio: `/speckit-specify` → `/speckit-plan` → `/speckit-tasks` �
 
 Esta constitution prevalece sobre toda práctica. Enmiendas con Sync Impact Report, versionado semántico (MAJOR ruptura, MINOR principio nuevo, PATCH clarificación) y revisión en PR. Cada PR verifica: local-first, tests en verde, RAG cita fuente, TTS desacoplado. Ningún commit ni push con `mvn -B test` en rojo, sin excepciones.
 
-**Version**: 1.3.0 | **Ratified**: 2026-10-06 | **Last Amended**: 2026-10-07
+**Version**: 1.4.0 | **Ratified**: 2026-10-06 | **Last Amended**: 2026-10-07
