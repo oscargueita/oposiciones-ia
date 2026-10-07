@@ -1,0 +1,25 @@
+openapi: 3.0.3
+info:
+  title: Oposiciones IA - Chuletas y Mapas API (005)
+  version: 0.5.0
+paths:
+  /api/v1/temas/{id}/chuleta:
+    get:
+      summary: Chuleta markdown del tema (la genera si falta)
+      responses:
+        '200':
+          description: Markdown con citas por bloque
+        '404':
+          description: Tema no existe
+        '422':
+          description: Tema vacío, en proceso o en error
+  /api/v1/temas/{id}/mapa:
+    get:
+      summary: Mapa mental Mermaid del tema (lo genera si falta)
+      responses:
+        '200':
+          description: Diagrama mindmap con sintaxis verificada
+        '404':
+          description: Tema no existe
+        '422':
+          description: Tema vacío, en proceso o en error
