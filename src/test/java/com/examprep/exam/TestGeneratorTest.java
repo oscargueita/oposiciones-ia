@@ -11,6 +11,7 @@ import com.examprep.syllabus.Topic;
 import com.examprep.syllabus.SyllabusException;
 import com.examprep.syllabus.SyllabusService;
 import com.examprep.syllabus.SyllabusServiceTest;
+import com.examprep.syllabus.TestPdf;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,8 +29,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class TestGeneratorTest {
 
-  @Autowired TestGenerator generador;
-  @Autowired SyllabusService temario;
+  @Autowired TestGenerator generator;
+  @Autowired SyllabusService syllabus;
   @MockBean EmbeddingService embeddingService;
   @MockBean ChatModel chatModel;
 
@@ -46,16 +47,16 @@ class TestGeneratorTest {
     return new ChatResponse(List.of(new Generation(new AssistantMessage(text))));
   }
 
-  private Topic temaConContenido() {
-    return temario.ingest("t.pdf", SyllabusServiceTest.validTopic());
+  private Topic topicWithContent() {
+    return syllabus.ingest("t.pdf", SyllabusServiceTest.validTopic());
   }
 
   @Test
   void generatesWithCitationAndDifficulty() {
     stubBase();
     when(chatModel.call(any(Prompt.class))).thenReturn(answer(JSON_OK));
-    Topic t = temaConContenido();
-    var created = generador.generate(t.getId(), 2, Difficulty.MEDIUM);
+    Topic t = topicWithContent();
+    var created = generator.generate(t.getId(), 2, Difficulty.MEDIUM);
     assertThat(created.questions()).hasSize(2);
     assertThat(created.test().getDifficulty()).isEqualTo(Difficulty.MEDIUM);
     assertThat(created.questions().get(0).getCitedTopicId()).isEqualTo(t.getId());
@@ -66,8 +67,8 @@ class TestGeneratorTest {
   void jsonInvalidoReintentaYSiTodoFalla422() {
     stubBase();
     when(chatModel.call(any(Prompt.class))).thenReturn(answer("no es json"));
-    Topic t = temaConContenido();
-    assertThatThrownBy(() -> generador.generate(t.getId(), 1, Difficulty.EASY))
+    Topic t = topicWithContent();
+    assertThatThrownBy(() -> generator.generate(t.getId(), 1, Difficulty.EASY))
         .isInstanceOf(SyllabusException.class);
   }
 
@@ -75,9 +76,33 @@ class TestGeneratorTest {
   void moreQuestionsThanFragmentsTrimsWithNotice() {
     stubBase();
     when(chatModel.call(any(Prompt.class))).thenReturn(answer(JSON_OK));
-    Topic t = temaConContenido();
-    var created = generador.generate(t.getId(), 50, Difficulty.EASY);
+    Topic t = topicWithContent();
+    var created = generator.generate(t.getId(), 50, Difficulty.EASY);
     assertThat(created.questions().size()).isLessThan(50);
     assertThat(created.notice()).contains("Materia para");
+  }
+
+  @Test
+  void generatesMixedBalancedAcrossTopics() {
+    stubBase();
+    when(chatModel.call(any(Prompt.class))).thenReturn(answer(JSON_OK));
+    Topic a = topicWithContent();
+    Topic b = syllabus.ingest("topic-b.pdf",
+        TestPdf.ofPages("TEMA 9. Otro\nContenido distinto del otro tema con texto suficiente para el test mixto."));
+    var created = generator.generateMixed(List.of(a.getId(), b.getId()), 4, Difficulty.MEDIUM);
+    assertThat(created.questions()).hasSize(4);
+    assertThat(created.test().getTopicId()).isNull();
+    assertThat(created.test().getAlcance()).contains("Mixto");
+    assertThat(created.questions().stream().map(Question::getCitedTopicId).distinct()).hasSize(2);
+  }
+
+  @Test
+  void generatesMixedFromAllWithoutList() {
+    stubBase();
+    when(chatModel.call(any(Prompt.class))).thenReturn(answer(JSON_OK));
+    topicWithContent();
+    var created = generator.generateMixed(null, 2, Difficulty.EASY);
+    assertThat(created.questions()).hasSize(2);
+    assertThat(created.test().getAlcance()).startsWith("Todos");
   }
 }

@@ -113,6 +113,8 @@
 
 - [x] T017 Build `npm run build` servido por Boot en :8080 sin :5173 (quickstart 9)
 - [x] T018 Ejecutar validación completa `quickstart.md` pasos 1-10
+- [x] T019 Specs Playwright (navegación, flujo estudio autolimpieza, repaso) + fixture PDF en `frontend/e2e/`
+- [x] T020 Fallback SPA en Boot (`SpaController`) para rutas directas
 
 ---
 

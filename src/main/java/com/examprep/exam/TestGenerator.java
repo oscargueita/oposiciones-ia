@@ -53,24 +53,65 @@ public class TestGenerator {
       throw new SyllabusException("Tema no listo para generar test", 422);
     }
     if (n < 1 || n > 50) throw new SyllabusException("Pide entre 1 y 50 preguntas", 422);
-    List<Fragment> base = new ArrayList<>(fragments.findByTopicIdOrderBySequenceAsc(topicId));
-    if (base.isEmpty()) throw new SyllabusException("Tema sin contenido para test", 422);
-    Collections.shuffle(base, new Random());
-    int objetivo = Math.min(n, base.size());
-    String notice = objetivo < n ? "Materia para " + objetivo + " de " + n + " pedidas" : null;
-    GeneratedTest test = tests.save(new GeneratedTest(topicId, difficulty, objetivo));
+    List<Fragment> pool = new ArrayList<>(fragments.findByTopicIdOrderBySequenceAsc(topicId));
+    if (pool.isEmpty()) throw new SyllabusException("Tema sin contenido para test", 422);
+    Collections.shuffle(pool, new Random());
+    return buildTest(topicId, "TEMA", pool, n, difficulty);
+  }
+
+  @Transactional
+  public CreatedTest generateMixed(List<Long> topicIds, int n, Difficulty difficulty) {
+    if (n < 1 || n > 50) throw new SyllabusException("Pide entre 1 y 50 preguntas", 422);
+    List<Topic> chosen = topicIds == null || topicIds.isEmpty()
+        ? topics.findAll().stream().filter(t -> t.getStatus() == Topic.Status.READY).toList()
+        : topicIds.stream()
+            .map(id -> topics.findById(id)
+                .orElseThrow(() -> new SyllabusException("Tema no existe: " + id, 404)))
+            .filter(t -> t.getStatus() == Topic.Status.READY)
+            .toList();
+    if (chosen.isEmpty()) throw new SyllabusException("Sin temas listos para test mixto", 422);
+    // Round-robin equilibrado: una ronda por tema hasta cubrir N
+    List<List<Fragment>> perTopic = new ArrayList<>();
+    for (Topic t : chosen) {
+      List<Fragment> fs = new ArrayList<>(fragments.findByTopicIdOrderBySequenceAsc(t.getId()));
+      Collections.shuffle(fs, new Random());
+      if (!fs.isEmpty()) perTopic.add(fs);
+    }
+    if (perTopic.isEmpty()) throw new SyllabusException("Temas sin contenido para test", 422);
+    List<Fragment> pool = new ArrayList<>();
+    boolean progress = true;
+    while (pool.size() < n && progress) {
+      progress = false;
+      for (List<Fragment> fs : perTopic) {
+        if (!fs.isEmpty() && pool.size() < n) {
+          pool.add(fs.remove(0));
+          progress = true;
+        }
+      }
+    }
+    String scope = (topicIds == null || topicIds.isEmpty())
+        ? "Todos (" + perTopic.size() + " temas)"
+        : "Mixto (" + perTopic.size() + " temas)";
+    return buildTest(null, scope, pool, n, difficulty);
+  }
+
+  private CreatedTest buildTest(Long topicId, String scope, List<Fragment> pool,
+      int n, Difficulty difficulty) {
+    int target = Math.min(n, pool.size());
+    String notice = target < n ? "Materia para " + target + " de " + n + " pedidas" : null;
+    GeneratedTest test = tests.save(new GeneratedTest(topicId, scope, difficulty, target));
     BeanOutputConverter<QuestionJson> converter = new BeanOutputConverter<>(QuestionJson.class);
     List<Question> createdItems = new ArrayList<>();
     Set<Long> used = new LinkedHashSet<>();
-    for (Fragment f : base) {
-      if (createdItems.size() >= objetivo || used.size() >= base.size()) break;
+    for (Fragment f : pool) {
+      if (createdItems.size() >= target || used.size() >= pool.size()) break;
       if (!used.add(f.getId())) continue;
       QuestionJson pj = intentar(f, difficulty, converter);
       if (pj == null) continue;
       try {
         createdItems.add(questions.save(new Question(test.getId(), createdItems.size(), pj.statement(),
             json.writeValueAsString(pj.options()), pj.correctIndex(), pj.explanation(),
-            topicId, f.getId(), f.getPage())));
+            f.getTopicId(), f.getId(), f.getPage())));
       } catch (Exception e) {
         throw new SyllabusException("No se pudo guardar la pregunta", 500, e);
       }
@@ -79,7 +120,7 @@ public class TestGenerator {
       tests.delete(test);
       throw new SyllabusException("No se pudo generar ninguna pregunta válida", 422);
     }
-    test.setNumPreguntas(createdItems.size());
+    test.setQuestionCount(createdItems.size());
     return new CreatedTest(test, createdItems, notice);
   }
 

@@ -94,10 +94,8 @@
 
 **Purpose**: Robustez LLM real + validación completa.
 
-- [x] T016 Test de integración opcional contra Ollama real (skipped sin servidor) en `src/test/java/com/oposiciones/examen/GeneradorOllamaIT.java`
+- [x] T016 Test de integración opcional contra Ollama real (skipped sin servidor) en `src/test/java/com/examprep/exam/OllamaQuestionGenerationIT.java`
 - [x] T017 Ejecutar validación completa `quickstart.md` pasos 1-9 y `mvn -B test` en verde
-
----
 
 ## Dependencies & Execution Order
 
@@ -114,3 +112,13 @@
 
 **MVP**: T001-T009 → STOP, validar quickstart 1-2.
 **Incremental**: +US2 → +US3 → polish.
+
+---
+
+## Addendum: Tests mixtos (2026-10-07, FR-011)
+
+- [x] T018 V7 (`tema_id` anulable + `alcance`) en `src/main/resources/db/migration/V7__tests_mixtos.sql`
+- [x] T019 `generateMixed` round-robin + `POST /api/v1/tests` + `GET /api/v1/tests` en `src/main/java/com/examprep/exam/`
+- [x] T020 Tests servicio + contrato mixto + historial global
+- [x] T021 UI multi-tema (un tema / varios / todos) + historial global en `frontend/src/views/Tests.tsx`
+- [x] T022 Validación E2E mixto real + suite verde

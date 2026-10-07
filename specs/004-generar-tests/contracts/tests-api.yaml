@@ -5,7 +5,7 @@ info:
 paths:
   /api/v1/temas/{id}/tests:
     post:
-      summary: Generar test (siempre preguntas nuevas)
+      summary: Generar test de un tema (siempre preguntas nuevas)
       parameters:
         - name: n
           in: query
@@ -23,6 +23,17 @@ paths:
           description: Test con preguntas (sin correctas expuestas? incluye todo en v1)
         '422':
           description: Tema sin contenido o N inválida
+  /api/v1/tests:
+    post:
+      summary: Generar test mixto (topicIds CSV opcional; ausente = todos los temas)
+      responses:
+        '201':
+          description: Test mixto con alcance ("Mixto (N temas)" o "Todos (N temas)")
+    get:
+      summary: Historial global con notas
+      responses:
+        '200':
+          description: Tests ordenados por fecha descendente
     get:
       summary: Historial de tests del tema con notas
       responses:

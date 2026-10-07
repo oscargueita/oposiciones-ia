@@ -80,6 +80,8 @@ export interface GradeDetail {
 
 export interface HistoryEntry {
   id: number;
+  topicId: number | null;
+  alcance: string;
   difficulty: string;
   questionCount: number;
   status: string;
@@ -127,6 +129,11 @@ export const api = {
     req<GeneratedTest>(`/api/v1/temas/${topicId}/tests?n=${n}&difficulty=${difficulty}`, {
       method: "POST",
     }),
+  generateMixed: (topicIds: number[], n: number, difficulty: string) =>
+    req<GeneratedTest>(
+      `/api/v1/tests?n=${n}&difficulty=${difficulty}${topicIds.length ? `&topicIds=${topicIds.join(",")}` : ""}`,
+      { method: "POST" }
+    ),
   answer: (testId: number, questionId: number, option: number) =>
     req<Feedback>(`/api/v1/tests/${testId}/responder`, {
       method: "POST",
@@ -136,6 +143,7 @@ export const api = {
   finishTest: (testId: number) =>
     req<Grade>(`/api/v1/tests/${testId}/finalizar`, { method: "POST" }),
   history: (topicId: number) => req<HistoryEntry[]>(`/api/v1/temas/${topicId}/tests`),
+  historyAll: () => req<HistoryEntry[]>('/api/v1/tests'),
   cheatsheet: (id: number) =>
     fetch(`/api/v1/temas/${id}/chuleta`).then(async (res) => {
       if (!res.ok) throw new Error("Sin chuleta");

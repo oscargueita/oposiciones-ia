@@ -57,7 +57,7 @@ public class Question {
   public Long getTestId() { return testId; }
   public int getSequence() { return sequence; }
   public String getStatement() { return statement; }
-  public String getOptiones() { return options; }
+  public String getOptions() { return options; }
   public int getCorrectIndex() { return correctIndex; }
   public String getExplanation() { return explanation; }
   public Long getCitedTopicId() { return citedTopicId; }

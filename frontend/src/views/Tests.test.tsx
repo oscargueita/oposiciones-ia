@@ -13,6 +13,8 @@ vi.mock('../api', () => ({
     answer: vi.fn().mockResolvedValue({ correct: true, correctIndex: 0, explanation: 'Porque sí', citedTopicId: 2, citedFragmentId: 1, citedPage: 1 }),
     finishTest: vi.fn().mockResolvedValue({ score: 10, correctCount: 1, wrongCount: 0, details: [] }),
     history: vi.fn().mockResolvedValue([]),
+    historyAll: vi.fn().mockResolvedValue([]),
+    generateMixed: vi.fn(),
   },
 }));
 

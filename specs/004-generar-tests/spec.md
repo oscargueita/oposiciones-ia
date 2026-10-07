@@ -15,6 +15,7 @@
 - Q: ¿La corrección debe mostrarse solo al final del test o dar feedback inmediato en cada pregunta? → A: Opción B — feedback inmediato tras cada respuesta.
 - Q: ¿Las preguntas deben tener un único nivel o elegir dificultad al generar el test? → A: Opción B — fácil, medio y difícil a elegir.
 - Q: ¿Se puede repetir el mismo test para mejorar nota o cada intento genera preguntas nuevas? → A: Opción B — cada intento genera preguntas nuevas.
+- Q: ¿El test puede mezclar varios temas o todos? → A: Mezcla a elegir (lista de temas o todos), muestreo equilibrado entre temas.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -85,6 +86,7 @@ El opositor consulta sus notas anteriores por tema para ver progreso.
 - **FR-008**: System MUST rechazar generar de temas vacíos, en proceso o en error.
 - **FR-009**: System MUST funcionar sin conexión a internet (generación local).
 - **FR-010**: System MUST permitir elegir dificultad (fácil, medio, difícil) al generar el test y guardarla con él.
+- **FR-011**: System MUST permitir generar un test mixto de varios temas elegidos o de todos, muestreando equilibrado entre temas; cada pregunta cita su tema.
 
 ### Key Entities
 

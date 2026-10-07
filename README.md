@@ -42,6 +42,7 @@ curl -F "files=@data/temario/tu-tema.pdf" http://localhost:8080/api/v1/temas
 | GET/PUT/DELETE | `/api/v1/temas/{id}/progreso` | Punto de escucha exacto |
 | GET | `/api/v1/repasar?q=&topicId?&topK=` | Top-5 por palabra clave con cita |
 | POST | `/api/v1/temas/{id}/tests?n=&difficulty=` | Generar test (EASY/MEDIUM/HARD) |
+| POST | `/api/v1/tests?n=&difficulty=&topicIds=` | Test mixto (varios o todos) |
 | POST | `/api/v1/tests/{id}/responder` + `/finalizar` | Feedback inmediato + nota |
 | GET | `/api/v1/temas/{id}/tests` | Historial con notas |
 

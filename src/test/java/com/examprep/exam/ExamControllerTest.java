@@ -81,4 +81,16 @@ class ExamControllerTest {
     mvc.perform(post("/api/v1/temas/" + topicId + "/tests").param("difficulty", "EXTREMA"))
         .andExpect(status().is(422));
   }
+
+  @Test
+  void mixedFromAllAndGlobalHistory() throws Exception {
+    mvc.perform(post("/api/v1/tests").param("n", "2").param("difficulty", "EASY"))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.topicId").doesNotExist())
+        .andExpect(jsonPath("$.alcance").value(org.hamcrest.Matchers.startsWith("Todos")))
+        .andExpect(jsonPath("$.questions.length()").value(2));
+    mvc.perform(get("/api/v1/tests"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1));
+  }
 }

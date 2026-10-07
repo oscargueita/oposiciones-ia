@@ -23,34 +23,59 @@ public class ExamController {
 
   public record QuestionDto(Long id, int sequence, String statement, List<String> options,
       Long citedTopicId, Long citedFragmentId, int citedPage) {}
-  public record TestDto(Long id, Long topicId, String difficulty, int questionCount,
+  public record TestDto(Long id, Long topicId, String alcance, String difficulty, int questionCount,
       String status, String notice, List<QuestionDto> questions) {}
-  public record HistoryDto(Long id, String difficulty, int questionCount, String status,
+  public record HistoryDto(Long id, Long topicId, String alcance, String difficulty, int questionCount, String status,
       Double score, String createdAt) {}
 
   @PostMapping("/temas/{id}/tests")
   public ResponseEntity<TestDto> generate(@PathVariable Long id,
       @RequestParam(defaultValue = "10") int n,
       @RequestParam(defaultValue = "MEDIUM") String difficulty) {
-    Difficulty d;
+    return ResponseEntity.status(201).body(toDto(generador.generate(id, n, parseDifficulty(difficulty))));
+  }
+
+  @PostMapping("/tests")
+  public ResponseEntity<TestDto> generateMixed(
+      @RequestParam(defaultValue = "10") int n,
+      @RequestParam(defaultValue = "MEDIUM") String difficulty,
+      @RequestParam(value = "topicIds", required = false) List<Long> topicIds) {
+    return ResponseEntity.status(201).body(toDto(generador.generateMixed(topicIds, n, parseDifficulty(difficulty))));
+  }
+
+  private Difficulty parseDifficulty(String difficulty) {
     try {
-      d = Difficulty.valueOf(difficulty.toUpperCase());
+      return Difficulty.valueOf(difficulty.toUpperCase());
     } catch (Exception e) {
       throw new SyllabusException("Difficulty EASY, MEDIUM o HARD", 422);
     }
-    var created = generador.generate(id, n, d);
+  }
+
+  private TestDto toDto(TestGenerator.CreatedTest created) {
     var t = created.test();
-    return ResponseEntity.status(201).body(new TestDto(t.getId(), t.getTopicId(),
-        t.getDifficulty().name(), t.getNumPreguntas(), t.getStatus().name(), created.notice(),
-        created.questions().stream().map(this::dto).toList()));
+    return new TestDto(t.getId(), t.getTopicId(), t.getAlcance(),
+        t.getDifficulty().name(), t.getQuestionCount(), t.getStatus().name(), created.notice(),
+        created.questions().stream().map(this::dto).toList());
   }
 
   @GetMapping("/temas/{id}/tests")
   public List<HistoryDto> history(@PathVariable Long id) {
     return tests.findByTopicIdOrderByCreatedAtDesc(id).stream()
-        .map(t -> new HistoryDto(t.getId(), t.getDifficulty().name(), t.getNumPreguntas(),
-            t.getStatus().name(), scoreIfGraded(t), t.getCreatedAt().toString()))
+        .map(this::historyDto)
         .toList();
+  }
+
+  @GetMapping("/tests")
+  public List<HistoryDto> allHistory() {
+    return tests.findAll().stream()
+        .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+        .map(this::historyDto)
+        .toList();
+  }
+
+  private HistoryDto historyDto(GeneratedTest t) {
+    return new HistoryDto(t.getId(), t.getTopicId(), t.getAlcance(), t.getDifficulty().name(),
+        t.getQuestionCount(), t.getStatus().name(), scoreIfGraded(t), t.getCreatedAt().toString());
   }
 
   @PostMapping("/tests/{testId}/responder")
@@ -77,7 +102,7 @@ public class ExamController {
   private QuestionDto dto(Question p) {
     List<String> ops;
     try {
-      ops = new com.fasterxml.jackson.databind.ObjectMapper().readValue(p.getOptiones(),
+      ops = new com.fasterxml.jackson.databind.ObjectMapper().readValue(p.getOptions(),
           new com.fasterxml.jackson.core.type.TypeReference<List<String>>() {});
     } catch (Exception e) {
       ops = List.of();
