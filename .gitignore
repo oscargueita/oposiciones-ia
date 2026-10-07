@@ -50,5 +50,6 @@ src/main/resources/static/
 
 ### Python (scripts) ###
 __pycache__/
-*.pycfrontend/test-results/
+*.pyc
+frontend/test-results/
 frontend/playwright-report/
